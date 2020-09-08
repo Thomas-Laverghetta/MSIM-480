@@ -13,6 +13,7 @@ To represent the system (pegboard game), system states will be a matrix MxN wher
 1111
 --
 
+
 ## Implementation
 There are three methods: 
 - goal(state): returns TRUE if state equals the state with exactly 1-peg
