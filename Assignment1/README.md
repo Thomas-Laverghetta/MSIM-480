@@ -5,12 +5,12 @@ Rules of the game. Pegboard problems are single-player games played on a grid, i
 
 ## System State
 To represent the system (pegboard game), system states will be a matrix MxN where a element represents a peg slot, 1 represents a peg in slot, and 0 represents no peg in slot. E.g., 
---
+```
 0111
 1111
 1111
 1111
---
+```
 
 ## Implementation
 There are three methods: 
@@ -20,7 +20,7 @@ There are three methods:
 
 ## Heuristics Algorithm
 Using Manhattan algorithm
---
+```
 Heuristic(state):
     sum = 0
     For r in len(state[:,]):
@@ -29,17 +29,17 @@ Heuristic(state):
                 sum = sum + | r - len(state[:,]) / 2 | + | c - len(state[,:]) / 2 |
 
     Return sum  
---
+```
 
 ## Goal Method
---
+```
 Goal(state):
     sum = 0
     For r in len(state[:,]):
         For c in len(state[,:]):
             sum = sum + state[r,c] 
     Return sum == 1 
---
+```
 
 ## Algorithms
 For this assignment, I am using the following algorithms. 
@@ -49,7 +49,7 @@ For this assignment, I am using the following algorithms.
 - A* search
 
 ## Breadth-first search Algorithm
---
+```
 Breadth-First-Search( Maze m )
     EnQueue( m.StartNode )
     While Queue.NotEmpty 
@@ -63,11 +63,12 @@ Breadth-First-Search( Maze m )
                     EnQueue( n )
             Mark c "Examined"                    
 End procedure
---
+```
 
 Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/bfs.html 
 
 ## Depth-first search Algorithm
+```
 Depth-First-Search-Kickoff( Maze m )
     Depth-First-Search( m.StartCell )
 End procedure
@@ -82,10 +83,11 @@ Depth-First-Search( MazeCell c )
                 Depth-First-Search( n )
         Mark c "Visited"
 End procedure
-
+```
 Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/dfs.html 
 
 ## Greedy Best Search Algorithm
+```
 1. Create 2 empty lists: OPEN and CLOSED
 2. Start from the initial node (say N) and put it in the ‘ordered’ OPEN list
 3. Repeat the next steps until GOAL node is reached
@@ -95,10 +97,11 @@ Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/df
     7. If N is not the GOAL node, expand node N to generate the ‘immediate’ next nodes linked to node N and add all those to the OPEN list
     8. Reorder the nodes in the OPEN list in ascending order according to an evaluation function (heuristic)
 7. RETURN findings
-
+```
 Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=The%20Greedy%20BFS%20algorithm%20selects,take%20advantages%20of%20both%20algorithms
 
 ## A* Search Algorithm
+```
 1.  Initialize the open list
 2.  Initialize the closed list
     put the starting node on the open 
@@ -137,17 +140,17 @@ Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=T
   
     e) push q on the closed list
     end (while loop) 
-
+```
 Reference: https://www.geeksforgeeks.org/a-search-algorithm/ 
 
 ## Data Structures
---
+```
 Node:
     state
     f = -1
     g = -1
     h = -1
 END
---
+```
 
 ## Functional Implemnentation
