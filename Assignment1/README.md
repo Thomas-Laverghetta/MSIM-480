@@ -40,6 +40,16 @@ Goal(state):
             sum = sum + state[r,c] 
     Return sum == 1 
 ```
+## Successor Method
+```
+Successor(state):
+    create empty list 
+    find all possible moves
+    for each move:
+        calculate state based on move
+        add state to list
+    Return list
+```
 
 ## Algorithms
 For this assignment, I am using the following algorithms. 
@@ -118,15 +128,12 @@ Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=T
    
     d) for each successor
         i) if successor is the goal, stop search
-          successor.g = q.g + distance between 
-                              successor and q
-          successor.h = distance from goal to 
-          successor (This can be done using many 
-          ways, we will discuss three heuristics- 
-          Manhattan, Diagonal and Euclidean 
-          Heuristics)
-          
-          successor.f = successor.g + successor.h
+        
+        successor.g = q.g + distance between 
+                            successor and q
+        successor.h = heuristic(successor)
+        
+        successor.f = successor.g + successor.h
 
         ii) if a node with the same position as 
             successor is in the OPEN list which has a 
@@ -153,4 +160,7 @@ Node:
 END
 ```
 
-## Functional Implemnentation
+## Functional Implementation
+Variables needed for calculation:
+- List containing Node path
+- Computational time of calculating given algorithm
