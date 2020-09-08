@@ -3,8 +3,7 @@ The program's objectives are given a pegboard game find a solution (i.e., only o
 
 Rules of the game. Pegboard problems are single-player games played on a grid, in which moves are made by successively jumping and removing pegs from the pegboard. A peg can jump an adjacent peg if there is a slot adjacent to that peg in the opposite direction – horizontally or vertically. Diagonal jumps are not allowed. After a peg has been jumped, it is removed from the board (and possibly eaten). A typical objective of this problem is to begin with a full pegboard from which one peg has been removed and determine a sequence of jumps which will result in one peg remaining. 
 
-## System State
-
+# System State
 To represent the system (pegboard game), system states will be a matrix MxN where a element represents a peg slot, 1 represents a peg in slot, and 0 represents no peg in slot. E.g., 
 --
 0111
