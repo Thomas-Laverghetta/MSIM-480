@@ -5,6 +5,7 @@ Rules of the game. Pegboard problems are single-player games played on a grid, i
 
 # System State
 To represent the system (pegboard game), system states will be a matrix MxN where a element represents a peg slot, 1 represents a peg in slot, and 0 represents no peg in slot. E.g., 
+
 --
 0111
 1111
