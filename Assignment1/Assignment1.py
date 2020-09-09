@@ -108,27 +108,24 @@ def Depth_First_Search(InitNode):
                 n.Prestate = InitNode
                 Depth_First_Search(n)
 
-# input is state
+# input is Node
 def Greedy_Best_Search(InitNode):
     Open = []
     Closed = []
     Open.append(InitNode)
-    while True:
-        if len(Open) == 0:
-            return nodePath = []
-
+    while len(Open) > 0:
         # Pop the top
         N = Open.pop()
         Closed.append(N)
 
-        if Goal(N):
+        if Goal(N.state):
             Closed.append(N)
             return Closed
         
-        Open.append(Successor(N))
+        Open.append(Successor(N.state))
         H = []
         for n in range(len(Open)):
-            H.append(Heuristic(Open[n]))
+            H.append(Heuristic(Open[n].state))
 
         ## bubble sort
         n = len(H)
@@ -149,5 +146,23 @@ def Greedy_Best_Search(InitNode):
 
 
 
+def A_Star_Search(InitNode):
+    Open = []
+    Closed = []
+    Open.append(InitNode)
 
-        
+    while len(Open) > 0:
+        q = Open.pop() 
+        neighbors = Successor(q.state)
+        for n in neighbors:
+            if Goal(n):
+                break
+            
+            n.g = q.g + 1
+            n.h = Heuristic(n.state)
+            n.f = n.g + n.h
+
+            for i in range(len(Open)):
+                if Open[i].state == n.state:
+                ########STOPPING HERE
+            
