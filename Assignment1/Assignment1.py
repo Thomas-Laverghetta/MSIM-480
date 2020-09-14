@@ -143,8 +143,16 @@ def Greedy_Best_Search(InitNode):
                 if H[j] > H[j+1] : 
                     H[j], H[j+1] = H[j+1], H[j] 
                     Open[j], Open[j+1] = Open[j+1], Open[j]
+    
+    return False
 
-
+def StatesEqual(state1, state2):
+    for r in range(len(state1)):
+        for c in range(len(state1[0])):
+            if state1[r,c] != state2[r,c]:
+                return False
+    
+    return True
 
 def A_Star_Search(InitNode):
     Open = []
@@ -156,13 +164,30 @@ def A_Star_Search(InitNode):
         neighbors = Successor(q.state)
         for n in neighbors:
             if Goal(n):
+                return True
                 break
             
             n.g = q.g + 1
             n.h = Heuristic(n.state)
             n.f = n.g + n.h
-
-            for i in range(len(Open)):
-                if Open[i].state == n.state:
-                ########STOPPING HERE
             
+            c = True
+            for i in range(len(Open)):
+                if StatesEqual(Open[i].state, n.state):
+                    if Open[i].f < n.f:
+                        c = False
+            
+            if c:
+                for i in range(len(Closed)):
+                    if StatesEqual(Closed[i].state, n.state):
+                        if Closed[i].f >= n.state:
+                            Open.append(n)
+                            break
+            
+        Closed.append(q)
+    # end of WHILE
+                    
+            
+
+def if __name__ == "__main__":
+    
