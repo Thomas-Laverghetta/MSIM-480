@@ -60,17 +60,18 @@ For this assignment, I am using the following algorithms.
 
 ## Breadth-first search Algorithm
 ```
-Breadth-First-Search( Maze m )
-    EnQueue( m.StartNode )
+Breadth-First-Search( State m )
+    create Queue <-- FIFO
+    push into Queue ( m.StartNode )
     While Queue.NotEmpty 
-        c <- DeQueue
+        c = Pop Queue 
         If c is the goal
             Exit
         Else
             Foreach neighbor n of c
                 If n "Unvisited"
                     Mark n "Visited"                    
-                    EnQueue( n )
+                    push into Queue( n )
             Mark c "Examined"                    
 End procedure
 ```
@@ -79,11 +80,7 @@ Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/bf
 
 ## Depth-first search Algorithm
 ```
-Depth-First-Search-Kickoff( Maze m )
-    Depth-First-Search( m.StartCell )
-End procedure
-
-Depth-First-Search( MazeCell c )
+Depth-First-Search( State c )
     If c is the goal
         Exit
     Else
