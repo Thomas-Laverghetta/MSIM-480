@@ -74,22 +74,14 @@ def Successor(stateNode):
     
     return neighboringStates
 
-def StateSum(state):
-    sum = 0
-    for r in range(len(state)):
-        for c in range(len(state[0])):
-            sum = sum + state[r][c]
-
-    return sum 
-
 # input is a node
 def Breadth_First_Search(InitNode):
-    closed = []
+    visited = [] # array of visited and visiting states
     maxMove = 0
 
+    # queue holding states to expand
     queue = []
     queue.append(InitNode)
-    # closed[0].append(InitNode.state)
     while len(queue) > 0:
         c = queue.pop(0)         # Get next element of queue
         if Goal(c.state):        # if current state is goal
@@ -99,18 +91,18 @@ def Breadth_First_Search(InitNode):
             neighbors = Successor(c)
 
             # number of moves made index 
-            n_moveSize = len(neighbors[0].moveSet) - 1
+            successor_moveSize = len(neighbors[0].moveSet) - 1
             
             # if index is larger than maxMove, update move counter (went to next layer down of tree) 
-            if len(neighbors) > 0 and (n_moveSize) > maxMove:
-                closed.clear()
+            if len(neighbors) > 0 and (successor_moveSize) > maxMove:
+                visited.clear()
                 maxMove = maxMove + 1
 
             # for each neighbor determine if state has not been searched
             for n in neighbors:
                 # if no other states were found that matched this state (n)
-                if n.state not in closed:   
-                    closed.append(n.state)
+                if n.state not in visited:   
+                    visited.append(n.state)
                     queue.append(n) # add to queue
     return False
     
@@ -210,9 +202,17 @@ def A_Star_Search(InitNode):
             
 
 if __name__ == "__main__":
+    # creating node object
     InitNode = Node()
 
-    InitNode.state = [[1,1,1,1,1,1],[1,0,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]]
+    # initializing pegboard 
+    InitNode.state = [[1,1,1,1,1,1],
+                      [1,0,1,1,1,1],
+                      [1,1,1,1,1,1],
+                      [1,1,1,1,1,1],
+                      [1,1,1,1,1,1],
+                      [1,1,1,1,1,1]]
 
+    # 
     path = Breadth_First_Search(InitNode)
     print(path)
