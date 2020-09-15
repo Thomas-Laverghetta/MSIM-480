@@ -76,7 +76,10 @@ def Successor(stateNode):
 
 # input is a node
 def Breadth_First_Search(InitNode):
-    visited = [] # array of visited and visiting states
+    cMax = len(InitNode.state[0])
+    rMax = len(InitNode.state)
+
+    visited = set() # array of visited and visiting states
     maxMove = 0
 
     # queue holding states to expand
@@ -90,19 +93,28 @@ def Breadth_First_Search(InitNode):
             # Get successor states from current state (c)
             neighbors = Successor(c)
 
-            # number of moves made index 
-            successor_moveSize = len(neighbors[0].moveSet) - 1
+            # # number of moves made index 
+            # successor_moveSize = (len(neighbors) > 0) * len(neighbors[0].moveSet) - 1
             
             # if index is larger than maxMove, update move counter (went to next layer down of tree) 
-            if len(neighbors) > 0 and (successor_moveSize) > maxMove:
+            if (len(c.moveSet) - 1) == maxMove:
                 visited.clear()
                 maxMove = maxMove + 1
 
             # for each neighbor determine if state has not been searched
             for n in neighbors:
+                # convert to tuple
+                temp = []
+                for r in range(rMax):
+                    for c in range(cMax):
+                        temp.append(n.state[r][c])
+                
+                t = tuple(temp)
+                temp.clear()
+
                 # if no other states were found that matched this state (n)
-                if n.state not in visited:   
-                    visited.append(n.state)
+                if t not in visited:   
+                    visited.add(t)
                     queue.append(n) # add to queue
     return False
     
@@ -207,12 +219,41 @@ if __name__ == "__main__":
 
     # initializing pegboard 
     InitNode.state = [[1,1,1,1,1,1],
-                      [1,0,1,1,1,1],
-                      [1,1,1,1,1,1],
-                      [1,1,1,1,1,1],
-                      [1,1,1,1,1,1],
-                      [1,1,1,1,1,1]]
+                        [1,0,1,1,1,1],
+                        [1,1,1,1,1,1],
+                        [1,1,1,1,1,1],
+                        [1,1,1,1,1,1],
+                        [1,1,1,1,1,1]]
 
-    # 
+    # temp = []
+    # for r in range(len(InitNode.state)):
+    #     for c in range(len(InitNode.state[0])):
+    #         temp.append(InitNode.state[r][c])
+    
+    # t = tuple(temp)
+
+    # settest = set()
+    # settest.add(t)
+
+    # testNode = Node()
+    # testNode.state = [[1,1,1,1,1,1],
+    #                     [1,1,0,0,1,1],
+    #                     [1,1,1,1,1,1],
+    #                     [1,1,1,1,1,1],
+    #                     [1,1,1,1,1,1],
+    #                     [1,1,1,1,1,1]]
+    
+    # temp = []
+    # for r in range(len(testNode.state)):
+    #     for c in range(len(testNode.state[0])):
+    #         temp.append(testNode.state[r][c])
+    
+    # t = tuple(temp)
+
+    # if t not in settest:
+    #     print(True)
+
+    # print(settest)
+                          
     path = Breadth_First_Search(InitNode)
     print(path)
