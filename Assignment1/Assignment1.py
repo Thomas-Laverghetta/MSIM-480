@@ -2,10 +2,10 @@ from copy import deepcopy
 
 class Node:
     state = []
-    Prestate = []
+    moveSet = []
     f = -1
-    g = -1
-    h = -1
+    # g = -1
+    # h = -1
 
 # Manhattan Algorithm
 def Heuristic(state):
@@ -27,41 +27,49 @@ def Goal(state):
     return True # TRUE if final state
 
 # Successor determines naighboring states
-def Successor(state):
+def Successor(stateNode):
     neighboringStates = []
-    for r in range(len(state)):
-        for c in range(len(state[0])):
-            if (state[r][c] != 0):
+    for r in range(len(stateNode.state)):
+        for c in range(len(stateNode.state[0])):
+            if (stateNode.state[r][c] != 0):
                 # Checking Above
-                if ((r+2) < len(state) and state[r+2][c] == 0 and state[r+1][c] == 1):
+                if ((r+2) < len(stateNode.state) and stateNode.state[r+2][c] == 0 and stateNode.state[r+1][c] == 1):
                     newNode = Node()
-                    newNode.state = deepcopy(state)
+                    newNode.state = deepcopy(stateNode.state)
                     newNode.state[r+2][c] = 1
                     newNode.state[r+1][c] = newNode.state[r][c] = 0
+                    newNode.moveSet = deepcopy(stateNode.moveSet) 
+                    newNode.moveSet.append(0)
                     neighboringStates.append(newNode)
 
                 # Checking Below
-                if ((r-2) >= 0 and state[r-2][c] == 0 and state[r-1][c] == 1):
+                if ((r-2) >= 0 and stateNode.state[r-2][c] == 0 and stateNode.state[r-1][c] == 1):
                     newNode = Node()
-                    newNode.state = deepcopy(state)
+                    newNode.state = deepcopy(stateNode.state)
                     newNode.state[r-2][c] = 1
                     newNode.state[r-1][c] = newNode.state[r][c] = 0
+                    newNode.moveSet = deepcopy(stateNode.moveSet)
+                    newNode.moveSet.append(2)
                     neighboringStates.append(newNode)
                 
                 # Checking to the right
-                if ((c+2) < len(state[0]) and state[r][c+2] == 0 and state[r][c+1] == 1):
+                if ((c+2) < len(stateNode.state[0]) and stateNode.state[r][c+2] == 0 and stateNode.state[r][c+1] == 1):
                     newNode = Node()
-                    newNode.state = deepcopy(state)
+                    newNode.state = deepcopy(stateNode.state)
                     newNode.state[r][c+2] = 1
                     newNode.state[r][c+1] = newNode.state[r][c] = 0
+                    newNode.moveSet = deepcopy(stateNode.moveSet) 
+                    newNode.moveSet.append(1)
                     neighboringStates.append(newNode)
 
                 # checking to the left
-                if ((c-2) >= 0 and state[r][c-2] == 0 and state[r][c-1] == 1):
+                if ((c-2) >= 0 and stateNode.state[r][c-2] == 0 and stateNode.state[r][c-1] == 1):
                     newNode = Node()
-                    newNode.state = deepcopy(state)
+                    newNode.state = deepcopy(stateNode.state)
                     newNode.state[r][c-2] = 1
                     newNode.state[r][c-1] = newNode.state[r][c] = 0
+                    newNode.moveSet = deepcopy(stateNode.moveSet) 
+                    newNode.moveSet.append(3)
                     neighboringStates.append(newNode)
     
     return neighboringStates
@@ -76,41 +84,34 @@ def StateSum(state):
 
 # input is a node
 def Breadth_First_Search(InitNode):
-    index = StateSum(InitNode.state) - 1
     closed = [[]]
+    closed.append([])
+    maxMove = 1
+
     queue = []
     queue.append(InitNode)
     # closed[0].append(InitNode.state)
     while len(queue) > 0:
         c = queue.pop(0)         # Get next element of queue
         if Goal(c.state):       # if current state is goal
-            # Find the nodePath to solution
-            nodePath = []
-            nodePath.append(c)  
-            it = c
-            while len(it.Prestate) > 0:
-                nodePath.append(it.Prestate)
-                it = it.Prestate
-            
-            return nodePath
+            return c
         else:
-            neighbors = Successor(c.state)
+            neighbors = Successor(c)
+            n_moveSize = len(neighbors[0].moveSet) - 1
+            if len(neighbors) > 0 and (n_moveSize) > maxMove:
+                closed[maxMove % 2 - 1].clear()
+                maxMove = maxMove + 1
+
+            
             for n in neighbors:
                 unvisited = True
-                sumIndex = index - StateSum(n.state)
-                if sumIndex < len(closed):
-                    for j in range(len(closed[sumIndex])):
-                        if closed[sumIndex][j] == n.state:
-                            unvisited = False
-                            break
-                    if unvisited:   # unvisited
-                        closed[sumIndex].append(n.state)
-                        n.Prestate = c.state # The previous state (used to find state path)
-                        queue.append(n) # add to queue
-                else:
-                    closed.append([n.state])
-                    n.Prestate = c.state # The previous state (used to find state path)
-                    queue.append(n) # add to queue 
+                for j in range(len(closed[n_moveSize % 2])):
+                    if closed[n_moveSize % 2][j] == n.state:
+                        unvisited = False
+                        break
+                if unvisited:   # unvisited
+                    closed[n_moveSize % 2].append(n.state)
+                    queue.append(n) # add to queue
     
     return False
     
