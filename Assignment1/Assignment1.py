@@ -84,35 +84,34 @@ def StateSum(state):
 
 # input is a node
 def Breadth_First_Search(InitNode):
-    closed = [[]]
-    closed.append([])
-    maxMove = 1
+    closed = []
+    maxMove = 0
 
     queue = []
     queue.append(InitNode)
     # closed[0].append(InitNode.state)
     while len(queue) > 0:
         c = queue.pop(0)         # Get next element of queue
-        if Goal(c.state):       # if current state is goal
+        if Goal(c.state):        # if current state is goal
             return c
         else:
+            # Get successor states from current state (c)
             neighbors = Successor(c)
+
+            # number of moves made index 
             n_moveSize = len(neighbors[0].moveSet) - 1
+            
+            # if index is larger than maxMove, update move counter (went to next layer down of tree) 
             if len(neighbors) > 0 and (n_moveSize) > maxMove:
-                closed[maxMove % 2 - 1].clear()
+                closed.clear()
                 maxMove = maxMove + 1
 
-            
+            # for each neighbor determine if state has not been searched
             for n in neighbors:
-                unvisited = True
-                for j in range(len(closed[n_moveSize % 2])):
-                    if closed[n_moveSize % 2][j] == n.state:
-                        unvisited = False
-                        break
-                if unvisited:   # unvisited
-                    closed[n_moveSize % 2].append(n.state)
+                # if no other states were found that matched this state (n)
+                if n.state not in closed:   
+                    closed.append(n.state)
                     queue.append(n) # add to queue
-    
     return False
     
 # input is a node
