@@ -1,5 +1,8 @@
 from copy import deepcopy 
+from collections import deque
 
+cMax = 0
+rMax = 0
 class Node:
     state = []
     moveSet = []
@@ -29,11 +32,11 @@ def Goal(state):
 # Successor determines naighboring states
 def Successor(stateNode):
     neighboringStates = []
-    for r in range(len(stateNode.state)):
-        for c in range(len(stateNode.state[0])):
+    for r in range(rMax):
+        for c in range(cMax):
             if (stateNode.state[r][c] != 0):
                 # Checking Above
-                if ((r+2) < len(stateNode.state) and stateNode.state[r+2][c] == 0 and stateNode.state[r+1][c] == 1):
+                if ((r+2) < rMax and stateNode.state[r+2][c] == 0 and stateNode.state[r+1][c] == 1):
                     newNode = Node()
                     newNode.state = deepcopy(stateNode.state)
                     newNode.state[r+2][c] = 1
@@ -53,7 +56,7 @@ def Successor(stateNode):
                     neighboringStates.append(newNode)
                 
                 # Checking to the right
-                if ((c+2) < len(stateNode.state[0]) and stateNode.state[r][c+2] == 0 and stateNode.state[r][c+1] == 1):
+                if ((c+2) < cMax and stateNode.state[r][c+2] == 0 and stateNode.state[r][c+1] == 1):
                     newNode = Node()
                     newNode.state = deepcopy(stateNode.state)
                     newNode.state[r][c+2] = 1
@@ -76,17 +79,14 @@ def Successor(stateNode):
 
 # input is a node
 def Breadth_First_Search(InitNode):
-    cMax = len(InitNode.state[0])
-    rMax = len(InitNode.state)
-
     visited = set() # array of visited and visiting states
     maxMove = 0
 
     # queue holding states to expand
-    queue = []
+    queue = deque()
     queue.append(InitNode)
     while len(queue) > 0:
-        c = queue.pop(0)         # Get next element of queue
+        c = queue.popleft()      # Get next element of queue
         if Goal(c.state):        # if current state is goal
             return c
         else:
@@ -118,25 +118,28 @@ def Breadth_First_Search(InitNode):
                     queue.append(n) # add to queue
     return False
     
+Depth_First_Search_VisitedList = set()
 # input is a node
 def Depth_First_Search(InitNode):
-    if Goal(InitNode):
-        # Find the nodePath to solution
-        nodePath = []
-        nodePath.append(InitNode)  
-        it = InitNode
-        while len(it.Prestate) > 0:
-            nodePath.append(it.Prestate)
-            it = it.Prestate
-        
-        return nodePath
+    if Goal(InitNode.state):
+        return InitNode
     else:
-        InitNode.f = 1 # mark visited
-        neighbors = Successor(InitNode.state)
+        neighbors = Successor(InitNode)
         for n in neighbors:
-            if n.f == -1:
-                n.Prestate = InitNode
+            # convert to tuple
+            temp = []
+            for r in range(rMax):
+                for c in range(cMax):
+                    temp.append(n.state[r][c])
+            
+            t = tuple(temp)
+            temp.clear()
+
+            if t not in Depth_First_Search_VisitedList:
+                Depth_First_Search_VisitedList.add(t)
                 Depth_First_Search(n)
+
+    return False
 
 # input is Node
 def Greedy_Best_Search(InitNode):
@@ -219,41 +222,15 @@ if __name__ == "__main__":
 
     # initializing pegboard 
     InitNode.state = [[1,1,1,1,1,1],
-                        [1,0,1,1,1,1],
-                        [1,1,1,1,1,1],
-                        [1,1,1,1,1,1],
-                        [1,1,1,1,1,1],
-                        [1,1,1,1,1,1]]
-
-    # temp = []
-    # for r in range(len(InitNode.state)):
-    #     for c in range(len(InitNode.state[0])):
-    #         temp.append(InitNode.state[r][c])
+                    [1,0,1,1,1,1],
+                    [1,1,1,1,1,1],
+                    [1,1,1,1,1,1],
+                    [1,1,1,1,1,1],
+                    [1,1,1,1,1,1]]
     
-    # t = tuple(temp)
-
-    # settest = set()
-    # settest.add(t)
-
-    # testNode = Node()
-    # testNode.state = [[1,1,1,1,1,1],
-    #                     [1,1,0,0,1,1],
-    #                     [1,1,1,1,1,1],
-    #                     [1,1,1,1,1,1],
-    #                     [1,1,1,1,1,1],
-    #                     [1,1,1,1,1,1]]
-    
-    # temp = []
-    # for r in range(len(testNode.state)):
-    #     for c in range(len(testNode.state[0])):
-    #         temp.append(testNode.state[r][c])
-    
-    # t = tuple(temp)
-
-    # if t not in settest:
-    #     print(True)
-
-    # print(settest)
+    # letting global size variables
+    cMax = len(InitNode.state[0])
+    rMax = len(InitNode.state)
                           
-    path = Breadth_First_Search(InitNode)
+    path = Depth_First_Search(InitNode)
     print(path)
