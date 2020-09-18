@@ -35,24 +35,24 @@ def Successor(stateNode):
     for r in range(rMax):
         for c in range(cMax):
             if (stateNode.state[r][c] != 0):
-                # Checking Above
+                # Checking Below
                 if ((r+2) < rMax and stateNode.state[r+2][c] == 0 and stateNode.state[r+1][c] == 1):
                     newNode = Node()
                     newNode.state = deepcopy(stateNode.state)
                     newNode.state[r+2][c] = 1
                     newNode.state[r+1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append(0)
+                    newNode.moveSet.append('D')
                     neighboringStates.append(newNode)
 
-                # Checking Below
+                # Checking Above
                 if ((r-2) >= 0 and stateNode.state[r-2][c] == 0 and stateNode.state[r-1][c] == 1):
                     newNode = Node()
                     newNode.state = deepcopy(stateNode.state)
                     newNode.state[r-2][c] = 1
                     newNode.state[r-1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet)
-                    newNode.moveSet.append(2)
+                    newNode.moveSet.append('U')
                     neighboringStates.append(newNode)
                 
                 # Checking to the right
@@ -62,7 +62,7 @@ def Successor(stateNode):
                     newNode.state[r][c+2] = 1
                     newNode.state[r][c+1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append(1)
+                    newNode.moveSet.append('R')
                     neighboringStates.append(newNode)
 
                 # checking to the left
@@ -72,7 +72,7 @@ def Successor(stateNode):
                     newNode.state[r][c-2] = 1
                     newNode.state[r][c-1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append(3)
+                    newNode.moveSet.append('L')
                     neighboringStates.append(newNode)
     
     return neighboringStates
@@ -92,9 +92,6 @@ def Breadth_First_Search(InitNode):
         else:
             # Get successor states from current state (c)
             neighbors = Successor(c)
-
-            # # number of moves made index 
-            # successor_moveSize = (len(neighbors) > 0) * len(neighbors[0].moveSet) - 1
             
             # if index is larger than maxMove, update move counter (went to next layer down of tree) 
             if (len(c.moveSet) - 1) == maxMove:
@@ -118,11 +115,12 @@ def Breadth_First_Search(InitNode):
                     queue.append(n) # add to queue
     return False
     
-Depth_First_Search_VisitedList = set()
 # input is a node
+Depth_First_Search_VisitedList = set()
 def Depth_First_Search(InitNode):
     if Goal(InitNode.state):
-        return InitNode
+        InitNode.f = 1
+        return InitNode 
     else:
         neighbors = Successor(InitNode)
         for n in neighbors:
@@ -137,9 +135,13 @@ def Depth_First_Search(InitNode):
 
             if t not in Depth_First_Search_VisitedList:
                 Depth_First_Search_VisitedList.add(t)
-                Depth_First_Search(n)
+                Result = Depth_First_Search(n)
 
-    return False
+                # defualt is -1 and only changes 
+                if Result.f == 1:
+                    return Result
+
+    return InitNode
 
 # input is Node
 def Greedy_Best_Search(InitNode):
@@ -178,7 +180,6 @@ def Greedy_Best_Search(InitNode):
                     Open[j], Open[j+1] = Open[j+1], Open[j]
     
     return False
-
 
 
 def A_Star_Search(InitNode):
@@ -221,16 +222,14 @@ if __name__ == "__main__":
     InitNode = Node()
 
     # initializing pegboard 
-    InitNode.state = [[1,1,1,1,1,1],
-                    [1,0,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1]]
+    InitNode.state = [[0,0,1,0],
+                    [0,1,0,1],
+                    [0,0,0,1],
+                    [0,0,0,0]]
     
     # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
                           
-    path = Depth_First_Search(InitNode)
+    path = Breadth_First_Search(InitNode)
     print(path)
