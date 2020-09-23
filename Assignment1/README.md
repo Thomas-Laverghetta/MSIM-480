@@ -145,7 +145,7 @@ Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=T
     e) push q on the closed list
     end (while loop) 
 ```
-Reference: https://www.geeksforgeeks.org/a-search-algorithm/ 
+Reference: https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 
 ## Data Structures
 ```
