@@ -4,6 +4,7 @@ import threading
 import time
 import tracemalloc
 import os
+import sys
 
 cMax = 0
 rMax = 0
@@ -215,7 +216,7 @@ def A_Star_Search(InitNode):
 
         # sort by lowest f
         Open.sort(key=lambda x: x.f, reverse=False)
-
+    return False
     # end of WHILE
                     
 def PathPrint(initState, moveSet):
@@ -249,38 +250,51 @@ def PathPrint(initState, moveSet):
         
         print('')
 
-
+File = open("Experiments.txt", "a")
 # FOR analysis. It tracks how much memory is used and process duration
 def Memory_Time_Keeper():
     curr_mem, max_memory = tracemalloc.get_traced_memory()
     memory_usage_refresh = 1 #.005 # Seconds
 
     # 
-    while(curr_mem / 10**6 < 3000.0 and time.process_time() < 3600.0):
+    while(curr_mem / 10**6 < 3000.0 and time.process_time() < 1800.0):
         time.sleep(memory_usage_refresh)
         curr_mem, max_memory = tracemalloc.get_traced_memory()
     tracemalloc.stop()
+    File.write("T,0" + str(time.process_time()) + "," + str(curr_mem / 10**6) + "," + str(max_memory / 10**6))
     print("Termination")
     print("Memory", curr_mem / 10**6)
     print("Time", time.process_time())
     os._exit(0)
     
 
+def ExperimentState(argu):
+    cMax = rMax = argu
+    state = []
+    for r in range(rMax):
+        temp = []
+        for c in range(cMax):
+            temp.append(1)
+        state.append(temp)
+
+    
+    if argu == 4 or argu == 5:
+        state[1][0] = 0
+    else:
+        state[1][1] = 0
+    
+    return state
 
 if __name__ == "__main__":
+    File = open("Experiments.txt", "a")
     tracemalloc.start()
     # creating node object
     InitNode = Node()
-
-    # initializing pegboard 
-    InitNode.state =  [[1,1,1,1,1,1],
-                    [1,0,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1],
-                    [1,1,1,1,1,1]]
     
-    # letting global size variables
+    # initializing pegboard 
+    InitNode.state = ExperimentState(int(sys.argv[1]))
+
+    # # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
 
@@ -288,5 +302,29 @@ if __name__ == "__main__":
     pthread = threading.Thread(target=Memory_Time_Keeper, args=(), daemon=True)
     pthread.start()
     
-    path = Breadth_First_Search(InitNode)
-    PathPrint(InitNode.state, path.moveSet)
+    Search = str(sys.argv[2])
+
+    # Search algorithm (DFS, BFS, GBS, Astar), NxN,
+    File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
+
+    # For experimentation
+    if Search == "DFS":
+        path = Depth_First_Search(InitNode)
+    elif Search == "BDF":
+        path = Breadth_First_Search(InitNode)
+    elif Search == "GBS":
+        path = Greedy_Best_Search(InitNode)
+    else:
+        path = A_Star_Search(InitNode)
+    
+    # if a solution was found
+    if path != False and Goal(path.state):
+        PathPrint(InitNode.state, path.moveSet)
+        File.write("S," + str(len(path.moveSet)) + ",") # solved (S), #moves
+    else:
+        File.write("F,0,")  # failed (F), #move = 0
+
+    curr_mem, max_mem = tracemalloc.get_traced_memory()
+    # save execution time, curr memory and max memory usage 
+    File.write(str(time.process_time()) + "," + str(curr_mem / 10**6) + "MB," + str(max_mem/ 10**6) + "MB\n")
+    File.close()
