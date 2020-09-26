@@ -176,6 +176,9 @@ def Greedy_Best_Search(InitNode):
 
 
 def A_Star_Search(InitNode):
+    if Goal(InitNode.state):
+        return InitNode
+
     Closed = set() # array of visited and visiting states
     Open = []
     Open.append(InitNode)
@@ -187,13 +190,12 @@ def A_Star_Search(InitNode):
         t = StateToTuple(q.state)
         Closed.add(t)
         for n in neighbors:
-            if Goal(n.state):
-                return n
-
             # convert to tuple
             t = StateToTuple(n.state)
 
             if t not in Closed:
+                if Goal(n.state):
+                    return n
                 n.f = Heuristic(n.state) + len(n.moveSet)
                 FOUND = False
                 for i in range(len(Open)):

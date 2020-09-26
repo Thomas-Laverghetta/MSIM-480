@@ -60,90 +60,98 @@ For this assignment, I am using the following algorithms.
 
 ## Breadth-first search Algorithm
 ```
-Breadth-First-Search( State m )
-    create Queue <-- FIFO
-    push into Queue ( m.StartNode )
-    While Queue.NotEmpty 
-        c = Pop Queue 
-        If c is the goal
-            Exit
-        Else
-            Foreach neighbor n of c
-                If n "Unvisited"
-                    Mark n "Visited"                    
-                    push into Queue( n )
-            Mark c "Examined"                    
-End procedure
+Bread First Search (State S)
+1. create FIFO Queue
+2.  push S into Queue 
+3. While Queue Is Not Empty
+4. 	T = Pop Queue
+5. 	if T is the goal
+6.		return T
+7.	else
+8.		foreach successor of T
+9.			if successor state has not been visited
+10.				mark successor state has visited
+11.				push successor into Queue
+12.			end if
+13.		end for
+14.	end if
+15. end while
+16. return no solution found
 ```
 
 Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/bfs.html 
 
 ## Depth-first search Algorithm
 ```
-Depth-First-Search( State c )
-    If c is the goal
-        Exit
-    Else
-        Mark c "Visit In Progress"
-        Foreach neighbor n of c
-            If n "Unvisited"
-                Depth-First-Search( n )
-        Mark c "Visited"
-End procedure
+Depth First Search (State S)
+1. if S is the goal
+2. 	mark S has goal
+3.	return S
+4. else
+5. 	foreach successor of S 
+6. 		if successor state has not been visited
+7.			mark successor state has visited
+8.			if Depth First Search (S) is the goal
+9.				return Depth First Search (S)
+10.			end if
+11.		end if
+12. 	end for
+13. end if
 ```
 Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/dfs.html 
 
 ## Greedy Best Search Algorithm
 ```
-1. Create 2 empty lists: OPEN and CLOSED
-2. Start from the initial node (say N) and put it in the ‘ordered’ OPEN list
-3. Repeat the next steps until GOAL node is reached
-    4. If OPEN list is empty, then EXIT the loop returning ‘False’
-    5. Select the first/top node (say N) in the OPEN list and move it to the CLOSED list. Also capture the information of the parent node
-    6. If N is a GOAL node, then move the node to the Closed list and exit the loop returning ‘True’. The solution can be found by backtracking the path
-    7. If N is not the GOAL node, expand node N to generate the ‘immediate’ next nodes linked to node N and add all those to the OPEN list
-    8. Reorder the nodes in the OPEN list in ascending order according to an evaluation function (heuristic)
-7. RETURN findings
+Greedy Best Search (State S)
+1. create FIFO Queue
+2. push S into Queue
+3. While Queue Is Not Empty
+4. 	T = Pop Queue
+5. 	if T is the goal
+6.		return T
+7.	end if
+8.	foreach successor of T
+9.		if successor state not visited
+10.			mark successor state has visited
+11.			calculate and save heuristic for successor
+12.			push successor into Queue
+13.		end if
+14.	end for
+15.	sort Queue in ascending order based on heuristic scores 
+16. end while
+17. return no solution found 	
 ```
 Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=The%20Greedy%20BFS%20algorithm%20selects,take%20advantages%20of%20both%20algorithms
 
 ## A* Search Algorithm
 ```
-1.  Initialize the open list
-2.  Initialize the closed list
-    put the starting node on the open 
-    list (you can leave its f at zero)
+A* (State S)
+1. if S is the goal
+2. 	return S
+3. end if
+4. create FIFO Queue
+5. push S into Queue 
+6. While Queue Is Not Empty
+7. 	T = Pop Queue
+8.	foreach successor of T
+9.		if successor state has not been visited
+10.			if successor is the goal
+11. 				return successor
+12.		 	end if
+13.			calculate and save heuristic and cost function for successor
+14.			if successor state in Queue
+15.				if successor’s cost is less than equivalent state in Queue’s cost
+16.					replace equivalent state with successor in Queue
+17.				end if
+18.			 else
+19.				push successor into Queue
+20.			end if
+21.		end if
+22.	end for
+23.	sort Queue in ascending order based on heuristic plus cost scores
+24. end while
+25. return no solution found
 
-3.  while the open list is not empty
-    a) find the node with the least f on 
-       the open list, call it "q"
-
-    b) pop q off the open list
-  
-    c) generate q's 8 successors and set their 
-       parents to q
-   
-    d) for each successor
-        i) if successor is the goal, stop search
-        
-        successor.g = q.g + distance between 
-                            successor and q
-        successor.h = heuristic(successor)
-        
-        successor.f = successor.g + successor.h
-
-        ii) if a node with the same position as 
-            successor is in the OPEN list which has a 
-           lower f than successor, skip this successor
-
-        iii) if a node with the same position as 
-            successor  is in the CLOSED list which has
-            a lower f than successor, skip this successor
-            otherwise, add  the node to the open list
-     end (for loop)
-  
-    e) push q on the closed list
-    end (while loop) 
 ```
 Reference: https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 
