@@ -1,5 +1,9 @@
 from copy import deepcopy 
 from collections import deque
+import threading
+import time
+import tracemalloc
+import os
 
 cMax = 0
 rMax = 0
@@ -246,8 +250,25 @@ def PathPrint(initState, moveSet):
         print('')
 
 
+# FOR analysis. It tracks how much memory is used and process duration
+def Memory_Time_Keeper():
+    curr_mem, max_memory = tracemalloc.get_traced_memory()
+    memory_usage_refresh = 1 #.005 # Seconds
+
+    # 
+    while(curr_mem / 10**6 < 3000.0 and time.process_time() < 3600.0):
+        time.sleep(memory_usage_refresh)
+        curr_mem, max_memory = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print("Termination")
+    print("Memory", curr_mem / 10**6)
+    print("Time", time.process_time())
+    os._exit(0)
+    
+
 
 if __name__ == "__main__":
+    tracemalloc.start()
     # creating node object
     InitNode = Node()
 
@@ -259,11 +280,13 @@ if __name__ == "__main__":
                     [1,1,1,1,1,1],
                     [1,1,1,1,1,1]]
     
-   
-    
     # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
-                          
-    path = Depth_First_Search(InitNode)
+
+    # starting time and memory keeper
+    pthread = threading.Thread(target=Memory_Time_Keeper, args=(), daemon=True)
+    pthread.start()
+    
+    path = Breadth_First_Search(InitNode)
     PathPrint(InitNode.state, path.moveSet)

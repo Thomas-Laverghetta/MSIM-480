@@ -62,7 +62,7 @@ For this assignment, I am using the following algorithms.
 ```
 Bread First Search (State S)
 1. create FIFO Queue
-2.  push S into Queue 
+2. push S into Queue 
 3. While Queue Is Not Empty
 4. 	T = Pop Queue
 5. 	if T is the goal
