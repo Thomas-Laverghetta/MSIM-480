@@ -22,7 +22,7 @@ def Goal(state):
     sum = 0
     for r in range(len(state)):
         for c in range(len(state[0])):
-            sum = sum + state[r][c] 
+            sum = sum + (state[r][c] != -1)*state[r][c] # -1s are NULL elements
             if sum > 1:
                 return False
     return True # TRUE if final state
@@ -40,7 +40,7 @@ def Successor(stateNode):
                     newNode.state[r+2][c] = 1
                     newNode.state[r+1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append('D')
+                    newNode.moveSet.append([r,c,'D'])
                     neighboringStates.append(newNode)
 
                 # Checking Above
@@ -50,7 +50,7 @@ def Successor(stateNode):
                     newNode.state[r-2][c] = 1
                     newNode.state[r-1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet)
-                    newNode.moveSet.append('U')
+                    newNode.moveSet.append([r,c,'U'])
                     neighboringStates.append(newNode)
                 
                 # Checking to the right
@@ -60,7 +60,7 @@ def Successor(stateNode):
                     newNode.state[r][c+2] = 1
                     newNode.state[r][c+1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append('R')
+                    newNode.moveSet.append([r,c,'R'])
                     neighboringStates.append(newNode)
 
                 # checking to the left
@@ -70,7 +70,7 @@ def Successor(stateNode):
                     newNode.state[r][c-2] = 1
                     newNode.state[r][c-1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append('L')
+                    newNode.moveSet.append([r,c,'L'])
                     neighboringStates.append(newNode)
     
     return neighboringStates
@@ -212,23 +212,56 @@ def A_Star_Search(InitNode):
 
     # end of WHILE
                     
-            
+def Print_MoveSetToStates(initState, moveSet):
+    print('Move',0)
+    for j in initState:
+        print(j)
+
+    print('')
+
+    count = 0
+    for i in moveSet:
+        count = count + 1
+        r = i[0]
+        c = i[1]
+        if i[2] == 'D':
+            initState[r+2][c] = 1
+            initState[r+1][c] = initState[r][c] = 0
+        elif i[2] == 'U':
+            initState[r-2][c] = 1
+            initState[r-1][c] = initState[r][c] = 0
+        elif i[2] == 'R':
+            initState[r][c+2] = 1
+            initState[r][c+1] = initState[r][c] = 0
+        else:
+            initState[r][c-2] = 1
+            initState[r][c-1] = initState[r][c] = 0
+
+        print('Move',count)
+        for j in initState:
+            print(j)
+        
+        print('')
+
+
 
 if __name__ == "__main__":
     # creating node object
     InitNode = Node()
 
     # initializing pegboard 
-    InitNode.state = [[1,1,1,1,1,1],
+    InitNode.state =  [[1,1,1,1,1,1],
                     [1,0,1,1,1,1],
                     [1,1,1,1,1,1],
                     [1,1,1,1,1,1],
                     [1,1,1,1,1,1],
                     [1,1,1,1,1,1]]
     
+   
+    
     # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
                           
-    path = A_Star_Search(InitNode)
-    print(path)
+    path = Depth_First_Search(InitNode)
+    Print_MoveSetToStates(InitNode.state, path.moveSet)
