@@ -212,7 +212,7 @@ def A_Star_Search(InitNode):
 
     # end of WHILE
                     
-def Print_MoveSetToStates(initState, moveSet):
+def PathPrint(initState, moveSet):
     print('Move',0)
     for j in initState:
         print(j)
@@ -264,4 +264,4 @@ if __name__ == "__main__":
     rMax = len(InitNode.state)
                           
     path = Depth_First_Search(InitNode)
-    Print_MoveSetToStates(InitNode.state, path.moveSet)
+    PathPrint(InitNode.state, path.moveSet)
