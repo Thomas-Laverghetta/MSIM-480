@@ -19,7 +19,7 @@ def Heuristic(state):
     for r in range(len(state)):
         for c in range(len(state[0])):
             if state[r][c] != 0:
-                sum = sum + abs(r - len(state)) + abs(c - len(state[0]))
+                sum = sum + abs(r - len(state)/2.0) + abs(c - len(state[0])/2.0)
     return sum
 
 # Goal determines whether given state is solution
@@ -288,8 +288,10 @@ def ExperimentState(argu):
 if __name__ == "__main__":
     if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
         File = open("DFS_BFS_Experiments.txt", "a")
-    else:
-        File = open("GBS_Astar_Experiments.txt", "a")
+    elif str(sys.argv[2]) == "GBS":
+        File = open("GBS_Experiments.txt", "a")
+    else: 
+        File = open("Astar_Experiments.txt", "a")
     
     # starting the tracking of memory usage
     tracemalloc.start()
