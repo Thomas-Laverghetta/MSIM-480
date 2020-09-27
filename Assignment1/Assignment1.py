@@ -250,23 +250,22 @@ def PathPrint(initState, moveSet):
         
         print('')
 
-File = open("Experiments.txt", "a")
 # FOR analysis. It tracks how much memory is used and process duration
-def Memory_Time_Keeper():
+def Memory_Time_Keeper(File):
     curr_mem, max_memory = tracemalloc.get_traced_memory()
     memory_usage_refresh = 1 #.005 # Seconds
 
     # 
-    while(curr_mem / 10**6 < 3000.0 and time.process_time() < 1800.0):
+    while(2*curr_mem / 10**6 < 2800.0 and time.process_time() < 7200.0):
         time.sleep(memory_usage_refresh)
         curr_mem, max_memory = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    File.write("T,0" + str(time.process_time()) + "," + str(curr_mem / 10**6) + "," + str(max_memory / 10**6))
-    print("Termination")
-    print("Memory", curr_mem / 10**6)
-    print("Time", time.process_time())
+    File.write("T,0," + str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "," + str(2*max_memory / 10**6) + "\n")
+    File.close()
+    # print("Termination")
+    # print("Memory", curr_mem / 10**6)
+    # print("Time", time.process_time())
     os._exit(0)
-    
 
 def ExperimentState(argu):
     cMax = rMax = argu
@@ -285,32 +284,37 @@ def ExperimentState(argu):
     
     return state
 
+
 if __name__ == "__main__":
-    File = open("Experiments.txt", "a")
+    if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
+        File = open("DFS_BFS_Experiments.txt", "a")
+    else:
+        File = open("GBS_Astar_Experiments.txt", "a")
+    
+    # starting the tracking of memory usage
     tracemalloc.start()
+
     # creating node object
     InitNode = Node()
-    
-    # initializing pegboard 
-    InitNode.state = ExperimentState(int(sys.argv[1]))
+    InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
 
     # # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
 
     # starting time and memory keeper
-    pthread = threading.Thread(target=Memory_Time_Keeper, args=(), daemon=True)
+    pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
     pthread.start()
     
-    Search = str(sys.argv[2])
-
     # Search algorithm (DFS, BFS, GBS, Astar), NxN,
+    Search = str(sys.argv[2])
     File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
+    print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
 
     # For experimentation
     if Search == "DFS":
         path = Depth_First_Search(InitNode)
-    elif Search == "BDF":
+    elif Search == "BFS":
         path = Breadth_First_Search(InitNode)
     elif Search == "GBS":
         path = Greedy_Best_Search(InitNode)
@@ -319,12 +323,29 @@ if __name__ == "__main__":
     
     # if a solution was found
     if path != False and Goal(path.state):
-        PathPrint(InitNode.state, path.moveSet)
+        # PathPrint(InitNode.state, path.moveSet)
         File.write("S," + str(len(path.moveSet)) + ",") # solved (S), #moves
     else:
         File.write("F,0,")  # failed (F), #move = 0
 
     curr_mem, max_mem = tracemalloc.get_traced_memory()
     # save execution time, curr memory and max memory usage 
-    File.write(str(time.process_time()) + "," + str(curr_mem / 10**6) + "MB," + str(max_mem/ 10**6) + "MB\n")
+    File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
     File.close()
+    print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
+    # tracemalloc.start()
+    # InitNode = Node()
+    
+    # # initializing pegboard 
+    # InitNode.state = ExperimentState(6)
+
+    # # # letting global size variables
+    # cMax = len(InitNode.state[0])
+    # rMax = len(InitNode.state)
+
+    # # starting time and memory keeper
+    # pthread = threading.Thread(target=Memory_Time_Keeper, args=(), daemon=True)
+    # pthread.start()
+
+    # path = Breadth_First_Search(InitNode)
+    # PathPrint(initState.state, path.moveSet)
