@@ -16,10 +16,11 @@ class Node:
 # Manhattan Algorithm
 def Heuristic(state):
     sum = 0
+    row_center = (len(state) -1)/2.0
+    col_center = (len(state[0]) - 1)/2.0
     for r in range(len(state)):
         for c in range(len(state[0])):
-            if state[r][c] != 0:
-                sum = sum + abs(r - len(state)/2.0) + abs(c - len(state[0])/2.0)
+            sum = sum + (state[r][c] != 0) * (abs(r - row_center / 2) + abs(c - col_center / 2))
     return sum
 
 # Goal determines whether given state is solution
@@ -151,14 +152,56 @@ def Depth_First_Search(InitNode):
 
     return InitNode
 
+
+class ListNode:
+    def __init__(self, dataval=None):
+        self.node = dataval
+        self.nextval = None
+
+class SortedLinkedList:
+    def __init__(self):
+        self.headval = None
+        self.counter = 0
+
+    # sorted insert
+    def AddNode(self, node):
+        new_listNode = ListNode(node)
+        if self.headval == None:
+            new_listNode.nextval = self.headval
+            self.headval = new_listNode
+        elif self.headval.node.f >= new_listNode.node.f:
+            new_listNode.nextval = self.headval
+            self.headval = new_listNode
+        else:
+            curr = self.headval
+            while curr.nextval != None and curr.nextval.node.f < new_listNode.node.f:
+                curr = curr.nextval
+            new_listNode.nextval = curr.nextval
+            curr.nextval = new_listNode
+
+        self.counter = self.counter + 1
+    
+    def Pop(self):
+        curr = self.headval
+        self.headval = self.headval.nextval
+
+        node = curr.node
+
+        del curr
+        curr = None
+        self.counter = self.counter - 1
+
+        return node
+
 # input is Node
 def Greedy_Best_Search(InitNode):
-    Open = []
+    Open = SortedLinkedList()
     Closed = set()
-    Open.append(InitNode)
-    while len(Open) > 0:
+
+    Open.AddNode(InitNode)
+    while Open.counter > 0:
         # Pop the top
-        N = Open.pop(0)
+        N = Open.Pop()
         
         t = StateToTuple(N.state)
         Closed.add(t)
@@ -171,11 +214,7 @@ def Greedy_Best_Search(InitNode):
             t = StateToTuple(n.state)
             if t not in Closed:
                 n.f = Heuristic(n.state)
-                Open.append(n)
-
-        if len(ne) > 0:
-            # To sort the list in place...
-            Open.sort(key=lambda x: x.f, reverse=False)
+                Open.AddNode(n)
     
     return False
 
@@ -185,11 +224,11 @@ def A_Star_Search(InitNode):
         return InitNode
 
     Closed = set() # array of visited and visiting states
-    Open = []
-    Open.append(InitNode)
+    Open = SortedLinkedList()
+    Open.AddNode(InitNode)
 
-    while len(Open) > 0:
-        q = Open.pop(0) 
+    while Open.counter > 0:
+        q = Open.Pop()
         neighbors = Successor(q)
 
         t = StateToTuple(q.state)
@@ -202,20 +241,16 @@ def A_Star_Search(InitNode):
                 if Goal(n.state):
                     return n
                 n.f = Heuristic(n.state) + len(n.moveSet)
-                FOUND = False
-                for i in range(len(Open)):
-                    if n.state == Open[i].state:
-                        if len(n.moveSet) < len(Open[i].moveSet):
-                            Open[i] = n
+                
+                # for i in range(Open.counter):
+                #     if n.state == Open.state:
+                #         if len(n.moveSet) < len(Open[i].moveSet):
+                #             Open[i] = n
 
-                        FOUND = True
-                        break
+                #         FOUND = True
+                #         break
 
-                if not FOUND:
-                    Open.append(n)
-
-        # sort by lowest f
-        Open.sort(key=lambda x: x.f, reverse=False)
+                Open.AddNode(n)
     return False
     # end of WHILE
                     
@@ -279,6 +314,12 @@ def ExperimentState(argu):
     
     if argu == 4 or argu == 5:
         state[1][0] = 0
+    elif argu == 8:
+        state[4][2] = 0
+    elif argu == 9: 
+        state[4][4] = 0
+    elif argu == 10:
+        state[5][4] = 0
     else:
         state[1][1] = 0
     
@@ -286,68 +327,64 @@ def ExperimentState(argu):
 
 
 if __name__ == "__main__":
-    if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
-        File = open("DFS_BFS_Experiments.txt", "a")
-    elif str(sys.argv[2]) == "GBS":
-        File = open("GBS_Experiments.txt", "a")
-    else: 
-        File = open("Astar_Experiments.txt", "a")
+    # if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
+    #     File = open("DFS_BFS_Experiments.txt", "a")
+    # elif str(sys.argv[2]) == "GBS":
+    #     File = open("GBS_Experiments.txt", "a")
+    # else: 
+    #     File = open("Astar_Experiments.txt", "a")
     
-    # starting the tracking of memory usage
-    tracemalloc.start()
-
-    # creating node object
-    InitNode = Node()
-    InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
-
-    # # letting global size variables
-    cMax = len(InitNode.state[0])
-    rMax = len(InitNode.state)
-
-    # starting time and memory keeper
-    pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
-    pthread.start()
-    
-    # Search algorithm (DFS, BFS, GBS, Astar), NxN,
-    Search = str(sys.argv[2])
-    File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
-    print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
-
-    # For experimentation
-    if Search == "DFS":
-        path = Depth_First_Search(InitNode)
-    elif Search == "BFS":
-        path = Breadth_First_Search(InitNode)
-    elif Search == "GBS":
-        path = Greedy_Best_Search(InitNode)
-    else:
-        path = A_Star_Search(InitNode)
-    
-    # if a solution was found
-    if path != False and Goal(path.state):
-        # PathPrint(InitNode.state, path.moveSet)
-        File.write("S," + str(len(path.moveSet)) + ",") # solved (S), #moves
-    else:
-        File.write("F,0,")  # failed (F), #move = 0
-
-    curr_mem, max_mem = tracemalloc.get_traced_memory()
-    # save execution time, curr memory and max memory usage 
-    File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
-    File.close()
-    print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
+    # # starting the tracking of memory usage
     # tracemalloc.start()
+
+    # # creating node object
     # InitNode = Node()
-    
-    # # initializing pegboard 
-    # InitNode.state = ExperimentState(6)
+    # InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
 
     # # # letting global size variables
     # cMax = len(InitNode.state[0])
     # rMax = len(InitNode.state)
 
     # # starting time and memory keeper
-    # pthread = threading.Thread(target=Memory_Time_Keeper, args=(), daemon=True)
+    # pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
     # pthread.start()
+    
+    # # Search algorithm (DFS, BFS, GBS, Astar), NxN,
+    # Search = str(sys.argv[2])
+    # File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
+    # print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
 
-    # path = Breadth_First_Search(InitNode)
-    # PathPrint(initState.state, path.moveSet)
+    # # For experimentation
+    # if Search == "DFS":
+    #     path = Depth_First_Search(InitNode)
+    # elif Search == "BFS":
+    #     path = Breadth_First_Search(InitNode)
+    # elif Search == "GBS":
+    #     path = Greedy_Best_Search(InitNode)
+    # else:
+    #     path = A_Star_Search(InitNode)
+    
+    # # if a solution was found
+    # if path != False and Goal(path.state):
+    #     # PathPrint(InitNode.state, path.moveSet)
+    #     File.write("S," + str(len(path.moveSet)) + ",") # solved (S), #moves
+    # else:
+    #     File.write("F,0,")  # failed (F), #move = 0
+
+    # curr_mem, max_mem = tracemalloc.get_traced_memory()
+    # # save execution time, curr memory and max memory usage 
+    # File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
+    # File.close()
+    # print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
+    
+    InitNode = Node()
+    
+    # initializing pegboard 
+    InitNode.state = ExperimentState(9)
+
+    # # letting global size variables
+    cMax = len(InitNode.state[0])
+    rMax = len(InitNode.state)
+
+    path = A_Star_Search(InitNode)
+    PathPrint(ExperimentState(9), path.moveSet)
