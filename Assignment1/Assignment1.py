@@ -8,6 +8,7 @@ import sys
 
 cMax = 0
 rMax = 0
+nodesSearched = 0
 class Node:
     state = []
     moveSet = []
@@ -101,6 +102,7 @@ def Breadth_First_Search(InitNode):
     queue = deque()
     queue.append(InitNode)
     while len(queue) > 0:
+        nodesSearched = nodesSearched + 1
         c = queue.popleft()      # Get next element of queue
         if Goal(c.state):        # if current state is goal
             return c
@@ -127,6 +129,7 @@ def Breadth_First_Search(InitNode):
 # input is a node
 Depth_First_Search_VisitedList = set()
 def Depth_First_Search(InitNode):
+    nodesSearched = nodesSearched + 1
     if Goal(InitNode.state):
         InitNode.f = 1
         return InitNode 
@@ -200,6 +203,7 @@ def Greedy_Best_Search(InitNode):
 
     Open.AddNode(InitNode)
     while Open.counter > 0:
+        nodesSearched = nodesSearched + 1
         # Pop the top
         N = Open.Pop()
         
@@ -228,6 +232,7 @@ def A_Star_Search(InitNode):
     Open.AddNode(InitNode)
 
     while Open.counter > 0:
+        nodesSearched = nodesSearched + 1
         q = Open.Pop()
         neighbors = Successor(q)
 
@@ -295,7 +300,7 @@ def Memory_Time_Keeper(File):
         time.sleep(memory_usage_refresh)
         curr_mem, max_memory = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    File.write("T,0," + str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "," + str(2*max_memory / 10**6) + "\n")
+    File.write("T," + str(nodesSearched) + "," + str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "," + str(2*max_memory / 10**6) + "\n")
     File.close()
     # print("Termination")
     # print("Memory", curr_mem / 10**6)
@@ -367,9 +372,9 @@ if __name__ == "__main__":
     # # if a solution was found
     # if path != False and Goal(path.state):
     #     # PathPrint(InitNode.state, path.moveSet)
-    #     File.write("S," + str(len(path.moveSet)) + ",") # solved (S), #moves
+    #     File.write("S," + str(nodesSearched) + ",") # solved (S), #moves
     # else:
-    #     File.write("F,0,")  # failed (F), #move = 0
+    #     File.write("F," str(nodesSearched))  # failed (F), #move = 0
 
     # curr_mem, max_mem = tracemalloc.get_traced_memory()
     # # save execution time, curr memory and max memory usage 
