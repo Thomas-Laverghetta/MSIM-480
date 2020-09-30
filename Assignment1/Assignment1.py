@@ -95,6 +95,7 @@ def StateToTuple(state):
 
 # input is a node
 def Breadth_First_Search(InitNode):
+    global nodesSearched
     visited = set() # array of visited and visiting states
     maxMove = 0
 
@@ -129,6 +130,7 @@ def Breadth_First_Search(InitNode):
 # input is a node
 Depth_First_Search_VisitedList = set()
 def Depth_First_Search(InitNode):
+    global nodesSearched
     nodesSearched = nodesSearched + 1
     if Goal(InitNode.state):
         InitNode.f = 1
@@ -198,6 +200,7 @@ class SortedLinkedList:
 
 # input is Node
 def Greedy_Best_Search(InitNode):
+    global nodesSearched
     Open = SortedLinkedList()
     Closed = set()
 
@@ -224,6 +227,7 @@ def Greedy_Best_Search(InitNode):
 
 
 def A_Star_Search(InitNode):
+    global nodesSearched
     if Goal(InitNode.state):
         return InitNode
 
@@ -332,64 +336,64 @@ def ExperimentState(argu):
 
 
 if __name__ == "__main__":
-    # if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
-    #     File = open("DFS_BFS_Experiments.txt", "a")
-    # elif str(sys.argv[2]) == "GBS":
-    #     File = open("GBS_Experiments.txt", "a")
-    # else: 
-    #     File = open("Astar_Experiments.txt", "a")
+    if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
+        File = open("DFS_BFS_Experiments.txt", "a")
+    elif str(sys.argv[2]) == "GBS":
+        File = open("GBS_Experiments.txt", "a")
+    else: 
+        File = open("Astar_Experiments.txt", "a")
     
-    # # starting the tracking of memory usage
-    # tracemalloc.start()
+    # starting the tracking of memory usage
+    tracemalloc.start()
 
-    # # creating node object
-    # InitNode = Node()
-    # InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
-
-    # # # letting global size variables
-    # cMax = len(InitNode.state[0])
-    # rMax = len(InitNode.state)
-
-    # # starting time and memory keeper
-    # pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
-    # pthread.start()
-    
-    # # Search algorithm (DFS, BFS, GBS, Astar), NxN,
-    # Search = str(sys.argv[2])
-    # File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
-    # print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
-
-    # # For experimentation
-    # if Search == "DFS":
-    #     path = Depth_First_Search(InitNode)
-    # elif Search == "BFS":
-    #     path = Breadth_First_Search(InitNode)
-    # elif Search == "GBS":
-    #     path = Greedy_Best_Search(InitNode)
-    # else:
-    #     path = A_Star_Search(InitNode)
-    
-    # # if a solution was found
-    # if path != False and Goal(path.state):
-    #     # PathPrint(InitNode.state, path.moveSet)
-    #     File.write("S," + str(nodesSearched) + ",") # solved (S), #moves
-    # else:
-    #     File.write("F," str(nodesSearched))  # failed (F), #move = 0
-
-    # curr_mem, max_mem = tracemalloc.get_traced_memory()
-    # # save execution time, curr memory and max memory usage 
-    # File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
-    # File.close()
-    # print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
-    
+    # creating node object
     InitNode = Node()
-    
-    # initializing pegboard 
-    InitNode.state = ExperimentState(9)
+    InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
 
     # # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
 
-    path = A_Star_Search(InitNode)
-    PathPrint(ExperimentState(9), path.moveSet)
+    # starting time and memory keeper
+    pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
+    pthread.start()
+    
+    # Search algorithm (DFS, BFS, GBS, Astar), NxN,
+    Search = str(sys.argv[2])
+    File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
+    print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
+
+    # For experimentation
+    if Search == "DFS":
+        path = Depth_First_Search(InitNode)
+    elif Search == "BFS":
+        path = Breadth_First_Search(InitNode)
+    elif Search == "GBS":
+        path = Greedy_Best_Search(InitNode)
+    else:
+        path = A_Star_Search(InitNode)
+    
+    # if a solution was found
+    if path != False and Goal(path.state):
+        # PathPrint(InitNode.state, path.moveSet)
+        File.write("S," + str(nodesSearched) + ",") # solved (S), #moves
+    else:
+        File.write("F," + str(nodesSearched) + ",")  # failed (F), #move = 0
+
+    curr_mem, max_mem = tracemalloc.get_traced_memory()
+    # save execution time, curr memory and max memory usage 
+    File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
+    File.close()
+    print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
+    
+    # InitNode = Node()
+    
+    # # initializing pegboard 
+    # InitNode.state = ExperimentState(9)
+
+    # # # letting global size variables
+    # cMax = len(InitNode.state[0])
+    # rMax = len(InitNode.state)
+
+    # path = A_Star_Search(InitNode)
+    # PathPrint(ExperimentState(9), path.moveSet)
