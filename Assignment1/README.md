@@ -168,4 +168,4 @@ Astar
 1,1,1,1
 ```
 
-Once input are defined, user can just execute python script and observe outputs (solution or no solution)
+Once input are defined, user can just execute python script (Assignment1.py) and observe outputs (solution or no solution).
