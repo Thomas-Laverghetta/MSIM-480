@@ -4,7 +4,7 @@ The program's objectives are given a pegboard game find a solution (i.e., only o
 Rules of the game. Pegboard problems are single-player games played on a grid, in which moves are made by successively jumping and removing pegs from the pegboard. A peg can jump an adjacent peg if there is a slot adjacent to that peg in the opposite direction – horizontally or vertically. Diagonal jumps are not allowed. After a peg has been jumped, it is removed from the board (and possibly eaten). A typical objective of this problem is to begin with a full pegboard from which one peg has been removed and determine a sequence of jumps which will result in one peg remaining. 
 
 # System State
-To represent the system (pegboard game), system states will be a matrix MxN where a element represents a peg slot, 1 represents a peg in slot, and 0 represents no peg in slot. E.g., 
+To represent the system (pegboard game), system states will be a matrix NxN where a element represents a peg slot, 1 represents a peg in slot, and 0 represents no peg in slot. E.g., 
 ```
 0111
 1111
@@ -58,7 +58,7 @@ For this assignment, I am using the following algorithms.
 - Greedy-best search
 - A* search
 
-## Breadth-first search Algorithm
+## Breadth-first search Algorithm (BFS)
 ```
 Bread First Search (State S)
 1. create FIFO Queue
@@ -79,9 +79,7 @@ Bread First Search (State S)
 16. return no solution found
 ```
 
-Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/bfs.html 
-
-## Depth-first search Algorithm
+## Depth-first search Algorithm (DFS)
 ```
 Depth First Search (State S)
 1. if S is the goal
@@ -98,9 +96,8 @@ Depth First Search (State S)
 12. 	end for
 13. end if
 ```
-Reference: https://courses.cs.washington.edu/courses/cse326/03su/homework/hw3/dfs.html 
 
-## Greedy Best Search Algorithm
+## Greedy Best Search Algorithm (GBS)
 ```
 Greedy Best Search (State S)
 1. create FIFO Queue
@@ -121,9 +118,8 @@ Greedy Best Search (State S)
 16. end while
 17. return no solution found 	
 ```
-Reference: https://www.mygreatlearning.com/blog/best-first-search-bfs/#:~:text=The%20Greedy%20BFS%20algorithm%20selects,take%20advantages%20of%20both%20algorithms
 
-## A* Search Algorithm
+## A* Search Algorithm (Astar)
 ```
 A* (State S)
 1. if S is the goal
@@ -153,19 +149,23 @@ A* (State S)
 25. return no solution found
 
 ```
-Reference: https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 
 ## Data Structures
 ```
 Node:
-    state
-    f = -1
-    g = -1
-    h = -1
+    node state   
+    heuristic function f = -1
 END
 ```
 
-## Functional Implementation
-Variables needed for calculation:
-- List containing Node path
-- Computational time of calculating given algorithm
+## How to Use Program
+To use the program you must choose your algorithm to run (BFS, DFS, GBS, or Astar) and your input pegboard using system state representation above. Inputs are added to input.csv file where the first line of the file is algorithm and following lines (2-) is initial system state. E.g. Using Astar and 4x4 initial state:
+```
+Astar
+1,0,1,1
+1,1,1,1
+1,1,1,1
+1,1,1,1
+```
+
+Once input are defined, user can just execute python script and observe outputs (solution or no solution)

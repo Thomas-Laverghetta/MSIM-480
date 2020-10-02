@@ -5,7 +5,6 @@ import time
 import tracemalloc
 import os
 import sys
-import csv
 
 cMax = 0
 rMax = 0
@@ -158,7 +157,7 @@ def Depth_First_Search(InitNode):
 
     return InitNode
 
-# Sorted Linked List data structure for GBS and A* 
+
 class ListNode:
     def __init__(self, dataval=None):
         self.node = dataval
@@ -187,7 +186,6 @@ class SortedLinkedList:
 
         self.counter = self.counter + 1
     
-    # Get head of list (smallest f)
     def Pop(self):
         curr = self.headval
         self.headval = self.headval.nextval
@@ -252,11 +250,19 @@ def A_Star_Search(InitNode):
                     return n
                 n.f = Heuristic(n.state) + len(n.moveSet)
                 Closed.add(t)
+
+                # for i in range(Open.counter):
+                #     if n.state == Open.state:
+                #         if len(n.moveSet) < len(Open[i].moveSet):
+                #             Open[i] = n
+
+                #         FOUND = True
+                #         break
+
                 Open.AddNode(n)
     return False
     # end of WHILE
-
-# prints the solution path to console                   
+                    
 def PathPrint(initState, moveSet):
     print('Move',0)
     for j in initState:
@@ -288,49 +294,106 @@ def PathPrint(initState, moveSet):
         
         print('')
 
+# FOR analysis. It tracks how much memory is used and process duration
+def Memory_Time_Keeper(File):
+    curr_mem, max_memory = tracemalloc.get_traced_memory()
+    memory_usage_refresh = 0.1 #.005 # Seconds
+
+    # 
+    while(2*curr_mem / 10**6 < 2800.0 and time.process_time() < 7200.0):
+        time.sleep(memory_usage_refresh)
+        curr_mem, max_memory = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    File.write("T," + str(nodesSearched) + "," + str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "," + str(2*max_memory / 10**6) + "\n")
+    File.close()
+    # print("Termination")
+    # print("Memory", curr_mem / 10**6)
+    # print("Time", time.process_time())
+    os._exit(0)
+
+def ExperimentState(argu):
+    cMax = rMax = argu
+    state = []
+    for r in range(rMax):
+        temp = []
+        for c in range(cMax):
+            temp.append(1)
+        state.append(temp)
+
+    
+    if argu == 4 or argu == 5:
+        state[1][0] = 0
+    elif argu == 8:
+        state[4][2] = 0
+    elif argu == 9: 
+        state[4][4] = 0
+    elif argu == 10:
+        state[5][4] = 0
+    else:
+        state[1][1] = 0
+    
+    return state
+
 
 if __name__ == "__main__":
-    Algorithms = ["Astar", "BFS", "DFS", "GBS"]
-    SelectedAlgorithm = ""
-    InitNode = Node()
+    if str(sys.argv[2]) == "BFS" or str(sys.argv[2]) == "DFS": 
+        File = open("DFS_BFS_Experiments.txt", "a")
+    elif str(sys.argv[2]) == "GBS":
+        File = open("GBS_Experiments.txt", "a")
+    else: 
+        File = open("Astar_Experiments.txt", "a")
     
-    # reading in input file
-    with open('input.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            if str(row[0]) in Algorithms:
-                SelectedAlgorithm = str(row[0])
-                continue
-            temp = []
-            for col in row:
-                temp.append(int(col))
-            InitNode.state.append(temp)
+    # starting the tracking of memory usage
+    tracemalloc.start()
 
+    # creating node object
+    InitNode = Node()
+    InitNode.state = ExperimentState(int(sys.argv[1]))  # initializing pegboard 
 
     # # letting global size variables
     cMax = len(InitNode.state[0])
     rMax = len(InitNode.state)
 
-    if cMax != rMax:
-        print("ERROR: Invalid Input sizes\n\a")
-        os._exit(0)
+    # starting time and memory keeper
+    pthread = threading.Thread(target=Memory_Time_Keeper, args=(File,), daemon=True)
+    pthread.start()
+    
+    # Search algorithm (DFS, BFS, GBS, Astar), NxN,
+    Search = str(sys.argv[2])
+    File.write(Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) + ",")
+    print("Starting w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]))
 
-    # What algorithm is selected
-    if SelectedAlgorithm == "DFS":
+    # For experimentation
+    if Search == "DFS":
         path = Depth_First_Search(InitNode)
-    elif SelectedAlgorithm == "BFS":
+    elif Search == "BFS":
         path = Breadth_First_Search(InitNode)
-    elif SelectedAlgorithm == "GBS":
+    elif Search == "GBS":
         path = Greedy_Best_Search(InitNode)
-    elif SelectedAlgorithm == "Astar":
-        path = A_Star_Search(InitNode)
     else:
-        print("ERROR: Invalid Search Algorithm inputted\n\a")
-        os._exit(0)
+        path = A_Star_Search(InitNode)
     
     # if a solution was found
     if path != False and Goal(path.state):
-        PathPrint(InitNode.state, path.moveSet)
+        # PathPrint(InitNode.state, path.moveSet)
+        File.write("S," + str(nodesSearched) + ",") # solved (S), #moves
     else:
-        print("NO SOLUTION FOUND\n")
+        File.write("F," + str(nodesSearched) + ",")  # failed (F), #move = 0
+
+    curr_mem, max_mem = tracemalloc.get_traced_memory()
+    # save execution time, curr memory and max memory usage 
+    File.write(str(time.process_time()) + "," + str(2*curr_mem / 10**6) + "MB," + str(2*max_mem/ 10**6) + "MB\n")
+    File.close()
+    print("DENE w/" + Search + "," + str(sys.argv[1]) + "x" + str(sys.argv[1]) +"\n\n")
     
+    # InitNode = Node()
+    
+    # # initializing pegboard 
+    # InitNode.state = ExperimentState(9)
+
+    # # # letting global size variables
+    # cMax = len(InitNode.state[0])
+    # rMax = len(InitNode.state)
+
+    # path = A_Star_Search(InitNode)
+    # PathPrint(ExperimentState(9), path.moveSet)
