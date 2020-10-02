@@ -201,6 +201,10 @@ class SortedLinkedList:
 # input is Node
 def Greedy_Best_Search(InitNode):
     global nodesSearched
+
+    if Goal(InitNode.state):
+        return InitNode
+    
     Open = SortedLinkedList()
     Closed = set()
 
@@ -209,17 +213,14 @@ def Greedy_Best_Search(InitNode):
         nodesSearched = nodesSearched + 1
         # Pop the top
         N = Open.Pop()
-        
-        t = StateToTuple(N.state)
-        Closed.add(t)
 
-        if Goal(N.state):
-            return N
-        
         ne = Successor(N)
         for n in ne:
             t = StateToTuple(n.state)
             if t not in Closed:
+                if Goal(n.state):
+                    return n
+                Closed.add(t)
                 n.f = Heuristic(n.state)
                 Open.AddNode(n)
     
@@ -240,8 +241,6 @@ def A_Star_Search(InitNode):
         q = Open.Pop()
         neighbors = Successor(q)
 
-        t = StateToTuple(q.state)
-        Closed.add(t)
         for n in neighbors:
             # convert to tuple
             t = StateToTuple(n.state)
@@ -250,7 +249,8 @@ def A_Star_Search(InitNode):
                 if Goal(n.state):
                     return n
                 n.f = Heuristic(n.state) + len(n.moveSet)
-                
+                Closed.add(t)
+
                 # for i in range(Open.counter):
                 #     if n.state == Open.state:
                 #         if len(n.moveSet) < len(Open[i].moveSet):
@@ -297,7 +297,7 @@ def PathPrint(initState, moveSet):
 # FOR analysis. It tracks how much memory is used and process duration
 def Memory_Time_Keeper(File):
     curr_mem, max_memory = tracemalloc.get_traced_memory()
-    memory_usage_refresh = 1 #.005 # Seconds
+    memory_usage_refresh = 0.1 #.005 # Seconds
 
     # 
     while(2*curr_mem / 10**6 < 2800.0 and time.process_time() < 7200.0):
