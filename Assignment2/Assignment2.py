@@ -74,9 +74,14 @@ class SortedLinkedList:
 
 # Container for RBG values
 class RGB:
-    R = random.randint(0,255)
-    G = random.randint(0,255)
-    B = random.randint(0,255)
+    def __init__(self, cond=None):
+        self.R = 0
+        self.G = 0
+        self.B = 0
+        if cond == None:
+            self.R = random.randint(0,255)
+            self.G = random.randint(0,255)
+            self.B = random.randint(0,255)
 
 # Container for X,Y points
 class Vector2D:
@@ -90,6 +95,35 @@ class Triangle:
     p3 = Vector2D()
     rgb = RGB()
 
+def MinXY(p1,p2,p3,maxY):
+    if p1 == maxY:
+        if p2.x < p3.x:
+            return p2,p3
+        else:
+            return p3,p2
+    elif p2 == maxY:
+        if p1.x < p3.x:
+            return p1,p3
+        else:
+            return p3,p1
+    else:
+        if p1.x < p2.x:
+            return p1,p2
+        else:
+            return p2,p1
+
+def MaxY(p1,p2,p3):
+    tmp = 0
+    if p1.y < p2.y:
+        tmp = p2
+    else:
+        tmp = p1
+    
+    if p3.y > tmp.y:
+        return p3
+    else:
+        return tmp
+
 class GeneticImage:
     class TriangleSet:
         def __init__(self, resolution, image):
@@ -100,10 +134,24 @@ class GeneticImage:
             self.fitness = self.IndividualFitness(image)
         
         def IndividualFitness(self, image):
+            global ImageSize
+            colorMatrix = []
+
+            # initialize color matrix
+            for _ in range(ImageSize[0]):
+                colorMatrix.append([RGB(True)] * ImageSize[1])
+            
+            for triangle in self.triangles:
+                maxY = MaxY(triangle.p1, triangle.p2, triangle.p3)
+                minX, minX2 = MinXY(triangle.p1,triangle.p2,triangle.p3,maxY)
+
+                # TO DO:
+                    # find area between lines (minX,minX2) and (minX,maxY) and (maxY,minX2)
+
+            del colorMatrix
             return 0
     
     def __init__(self, initPopulation, geneLength, image):
-        self.colorMatrix = []
         self.population = SortedLinkedList()
         self.fittest = None
         self.secondFittest = None
@@ -117,7 +165,7 @@ class GeneticImage:
             self.Selection()
             self.CrossOver(geneLength)
             if random.randint(0,7) < 5:
-                self.Mutation()
+                self.Mutation(geneLength)
             
             # recalculating after crossover and mutation
             self.fittest.IndividualFitness(image)
