@@ -41,6 +41,10 @@ class SortedLinkedList:
 
         self.counter = self.counter + 1
     
+    # returns head of linked list
+    def GetHead(self):
+        return self.headval
+
     # Get head of list (smallest f)
     def Pop(self):
         curr = self.headval
@@ -68,15 +72,18 @@ class SortedLinkedList:
 
         return node
 
+# Container for RBG values
 class RGB:
     R = random.randint(0,255)
     G = random.randint(0,255)
     B = random.randint(0,255)
 
+# Container for X,Y points
 class Vector2D:
     x = random.randint(0, ImageSize[0])
     y = random.randint(0, ImageSize[1])
 
+# container for traingle vector
 class Triangle:
     p1 = Vector2D()
     p2 = Vector2D()
@@ -86,29 +93,29 @@ class Triangle:
 class GeneticImage:
     class TriangleSet:
         def __init__(self, resolution, image):
-            self.triangleset = []
+            self.triangles = []
             for _ in range(resolution):
-                self.triangleset.append(Triangle())
+                self.triangles.append(Triangle())
             
             self.fitness = self.IndividualFitness(image)
         
         def IndividualFitness(self, image):
             return 0
     
-    def __init__(self, initPopulation, resolution, image):
+    def __init__(self, initPopulation, geneLength, image):
         self.colorMatrix = []
         self.population = SortedLinkedList()
         self.fittest = None
         self.secondFittest = None
         self.generationCount = 0
         for _ in range():
-            self.population.AddNode(self.TriangleSet(resolution, image))
+            self.population.AddNode(self.TriangleSet(geneLength, image))
         
         while self.population.headval.fitness < 5:
             self.generationCount = self.generationCount + 1
             
             self.Selection()
-            self.Crossover()
+            self.CrossOver(geneLength)
             if random.randint(0,7) < 5:
                 self.Mutation()
             
@@ -124,15 +131,37 @@ class GeneticImage:
                 self.population.AddNode(self.fittest)            
             else:
                 self.population.AddNode(self.secondFittest)
-            
+
+    # select fittest and second fittest     
     def Selection(self):
-        pass
+        head = self.population.GetHead()            # get head of list (points to the fittest)
+        self.fittest = head.node                    # get fittest node
+        self.secondFittest = head.nextval.node      # get second fittest node (sorted linked list, so second)
 
-    def Crossover(self):
-        pass
+    # mixes genes between fittest and secondFittest
+    def CrossOver(self, geneLength):
+        crossOverPoint = random.randint(0,geneLength - 1)
+        for i in range(crossOverPoint):
+            temp = self.fittest.triangles[i]
+            self.fittest.triangles[i] = self.secondFittest.triangles[i]
+            self.secondFittest.triangles[i] = temp
 
-    def Mutation(self):
-        pass
+    def Mutation(self, geneLength):
+        # calculating mutation point
+        mutationPoint = random.randint(0, geneLength - 1)
+
+        # flipping color mutation
+        self.fittest.triangles[mutationPoint].rgb.B = 255 - self.fittest.triangles[mutationPoint].rgb.B
+        self.fittest.triangles[mutationPoint].rgb.G = 255 - self.fittest.triangles[mutationPoint].rgb.G  
+        self.fittest.triangles[mutationPoint].rgb.R = 255 - self.fittest.triangles[mutationPoint].rgb.R  
+
+        # calculating mutation point for second fittest
+        mutationPoint = random.randint(0, geneLength - 1)
+
+        # flippng color mutation
+        self.secondFittest.triangles[mutationPoint].rgb.B = 255 - self.secondFittest.triangles[mutationPoint].rgb.B
+        self.secondFittest.triangles[mutationPoint].rgb.G = 255 - self.secondFittest.triangles[mutationPoint].rgb.G  
+        self.secondFittest.triangles[mutationPoint].rgb.R = 255 - self.secondFittest.triangles[mutationPoint].rgb.R 
 
 
 
