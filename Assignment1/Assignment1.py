@@ -48,7 +48,7 @@ def Successor(stateNode):
                     newNode.state[r+2][c] = 1
                     newNode.state[r+1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append([r,c,'D'])
+                    newNode.moveSet.append([r,c,'S'])
                     neighboringStates.append(newNode)
 
                 # Checking Above
@@ -58,7 +58,7 @@ def Successor(stateNode):
                     newNode.state[r-2][c] = 1
                     newNode.state[r-1][c] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet)
-                    newNode.moveSet.append([r,c,'U'])
+                    newNode.moveSet.append([r,c,'N'])
                     neighboringStates.append(newNode)
                 
                 # Checking to the right
@@ -68,7 +68,7 @@ def Successor(stateNode):
                     newNode.state[r][c+2] = 1
                     newNode.state[r][c+1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append([r,c,'R'])
+                    newNode.moveSet.append([r,c,'E'])
                     neighboringStates.append(newNode)
 
                 # checking to the left
@@ -78,7 +78,7 @@ def Successor(stateNode):
                     newNode.state[r][c-2] = 1
                     newNode.state[r][c-1] = newNode.state[r][c] = 0
                     newNode.moveSet = deepcopy(stateNode.moveSet) 
-                    newNode.moveSet.append([r,c,'L'])
+                    newNode.moveSet.append([r,c,'W'])
                     neighboringStates.append(newNode)
     
     return neighboringStates
@@ -269,13 +269,13 @@ def PathPrint(initState, moveSet):
         count = count + 1
         r = i[0]
         c = i[1]
-        if i[2] == 'D':
+        if i[2] == 'S':
             initState[r+2][c] = 1
             initState[r+1][c] = initState[r][c] = 0
-        elif i[2] == 'U':
+        elif i[2] == 'N':
             initState[r-2][c] = 1
             initState[r-1][c] = initState[r][c] = 0
-        elif i[2] == 'R':
+        elif i[2] == 'E':
             initState[r][c+2] = 1
             initState[r][c+1] = initState[r][c] = 0
         else:
@@ -333,4 +333,6 @@ if __name__ == "__main__":
         PathPrint(InitNode.state, path.moveSet)
     else:
         print("NO SOLUTION FOUND\n")
+
+    print("Solution Path (r,c,direction):", path.moveSet)    
     
