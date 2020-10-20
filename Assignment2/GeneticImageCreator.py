@@ -7,6 +7,9 @@ from PIL import Image, ImageDraw, ImageChops
 import time
 import math
 import operator
+import os
+import sys
+
 
 
 # Sorted Linked List data structure for triangle set
@@ -21,7 +24,7 @@ class SortedLinkedList:
         self.headval = None
         self.tailval = None
         self.counter = 0
-        self.TotalFitness = 0.0
+        self.TotalInverseFitness = 0.0
 
     # sorted insert
     def AddNode(self, node):
@@ -48,7 +51,7 @@ class SortedLinkedList:
                 self.tailval = new_listNode
 
         self.counter = self.counter + 1
-        self.TotalFitness += node.fitness
+        self.TotalInverseFitness += 1.0/node.fitness
     
     # returns head of linked list
     def GetHead(self):
@@ -62,14 +65,10 @@ class SortedLinkedList:
 
         curr = self.headval
 
-        # The sum of all weights from 1 to counter
-        # NormSum = self.counter * (self.counter + 1.0) / 2.0
-
-        sum = 0
-        # i = self.counter
+        probSum = 0.0
         while(parent1 == None or parent2 == None):
-            sum += curr.node.fitness
-            pmf = (sum / self.TotalFitness)
+            probSum += 1.0/curr.node.fitness
+            pmf = (sprobSumum / self.TotalFitness)
             if parent1 == None and p1_r <= pmf:
                 parent1 = curr.node # deepcopy(curr.node)
             
@@ -91,7 +90,7 @@ class SortedLinkedList:
         del curr
         curr = None
         self.counter = self.counter - 1
-        self.TotalFitness -= node.fitness
+        self.TotalInverseFitness -= 1.0/node.fitness
         return node
     
     # pops the last node in the linked list
@@ -105,7 +104,7 @@ class SortedLinkedList:
         del curr
         curr = None
         self.counter = self.counter - 1
-        self.TotalFitness -= node.fitness
+        self.TotalInverseFitness -= 1.0/node.fitness
         return node
 
 
@@ -170,8 +169,8 @@ class GeneticImage:
             self.img = img # = np.asarray(img)
 
         def Fitness(self):
+            # Fitness function was taken from https://github.com/DING-PENG/image-approx
             self.generate_image()
-            # Image.fromarray(self.img, 'RGBA')
             h = ImageChops.difference(src_img, self.img).histogram()
             self.fitness = math.sqrt(reduce(operator.add,
                             map(lambda h, i: h*(i**2),
@@ -193,7 +192,7 @@ class GeneticImage:
             self.population.AddNode(self.TriangleSet(geneLength))
 
         # generate first best image    
-        self.population.headval.node.save_image('Generation ' + str(self.generationCount) + '.png')
+        self.population.headval.node.save_image(BATCH_PATH+'/GeneticGeneration ' + str(self.generationCount) + '.png')
 
         # the generation control loop
         while self.population.headval.node.fitness > 5 and self.generationCount < 100000:
@@ -203,9 +202,6 @@ class GeneticImage:
             for _ in range(5):
                 self.Selection()
                 self.CrossOver(geneLength)
-
-                # 20% chance of mutation
-                #if random.uniform(0,1) < 0.05:
                 self.Mutation(geneLength)
                 self.child.Fitness()
                 children.append(deepcopy(self.child))
@@ -215,47 +211,67 @@ class GeneticImage:
                 self.population.PopLast()
                 self.population.AddNode(children[i])
             
-            if self.generationCount % 5000 == 0:
+            if self.generationCount in [100,1000,10000,20000,30000,50000,10000]:
                 print(self.population.headval.node.fitness)
-                self.population.headval.node.save_image('Generation ' + str(self.generationCount) + '.png')
+                self.population.headval.node.save_image(BATCH_PATH+'/GeneticGeneration ' + str(self.generationCount) + '.png')
             elif self.generationCount % 500 == 0:
                 print(self.population.headval.node.fitness)
 
-        self.population.headval.node.save_image('Generation ' + str(self.generationCount) + '.png')
+        self.population.headval.node.save_image(BATCH_PATH+'/GeneticGeneration ' + str(self.generationCount) + '.png')
 
     # select two random parents from population     
     def Selection(self):
+        # selecting two weighted random parents from population
         self.parent1, self.parent2 = self.population.GetRandParents()
 
     # mixes genes between fittest and secondFittest
     def CrossOver(self, geneLength):
+        # the crossover of parents
         for i in range(geneLength):
-            if random.uniform(0,1) < 0.5:
+            if random.uniform(0,1) < CROSS_OVER_PROB:
                 self.child.triangles[i] = deepcopy(self.parent1.triangles[i])
             else:
                 self.child.triangles[i] = deepcopy(self.parent2.triangles[i])
             
 
     def Mutation(self, geneLength):
-        # # calculating mutation point
-        # mutationPoint = random.randint(0, geneLength - 1)
-
+        # Mutation of individual genes
         for i in range(geneLength):
-            if random.uniform(0, 1) < 0.05:
+            if random.uniform(0, 1) < MUTATION_PROB:
                 self.child.triangles[i].TriMutate()
 
 if __name__ == "__main__":
     global src_img
     global src_img_w
     global src_img_h
+    global MUTATION_PROB
+    MUTATION_PROB = 0.05 # float(sys.argv[4])
+    global CROSS_OVER_PROB
+    CROSS_OVER_PROB = 0.5 # float(sys.argv[3])
+    PATH_SOURCE_IMAGE = "Images/ItalianFlagSource"
 
+    POPULATION_SIZE = 25 #int(sys.argv[1])
+    NUM_TRIANGLES_PER_GENE = 100 #int(sys.argv[2])
+
+
+    # Creates batch folder to save all boids from multiple runs
+    global BATCH_PATH
+    # BATCH_PATH = PATH_SOURCE_IMAGE + "_pop" + str(POPULATION_SIZE) + "_genelegnth" + str(NUM_TRIANGLES_PER_GENE) + "_mut" + str(MUTATION_PROB) + "_cross" + str(CROSS_OVER_PROB)
+    # try:
+    #     os.makedirs(BATCH_PATH)
+    # except OSError:
+    #     print ("Creation of the directory %s failed" % BATCH_PATH)
+    # else:
+    #     print ("Successfully created the directory %s" % BATCH_PATH)
+
+    
     # set image and get size of image
-    src_img = Image.open('Facebook_Logo.png')
+    src_img = Image.open(PATH_SOURCE_IMAGE + '.png')
     src_img_w, src_img_h = src_img.size
 
     # convert image to RGBA if not already
     if src_img.format != 'RGBA':
         src_img = src_img.convert('RGBA')
     
-    GeneticImage(25,100)
+    GeneticImage(POPULATION_SIZE,NUM_TRIANGLES_PER_GENE)
     
