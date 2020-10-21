@@ -68,7 +68,7 @@ class SortedLinkedList:
         probSum = 0.0
         while(parent1 == None or parent2 == None):
             probSum += 1.0/curr.node.fitness
-            pmf = (probSum / self.TotalFitness)
+            pmf = (probSum / self.TotalInverseFitness)
             if parent1 == None and p1_r <= pmf:
                 parent1 = curr.node # deepcopy(curr.node)
             
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     MUTATION_PROB = 0.05 # float(sys.argv[4])
     global CROSS_OVER_PROB
     CROSS_OVER_PROB = 0.5 # float(sys.argv[3])
-    PATH_SOURCE_IMAGE = "Images/ItalianFlagSource"
+    PATH_SOURCE_IMAGE = "Images/" + str(sys.argv[1])
 
     POPULATION_SIZE = 25 #int(sys.argv[1])
     NUM_TRIANGLES_PER_GENE = 100 #int(sys.argv[2])
@@ -256,13 +256,13 @@ if __name__ == "__main__":
 
     # Creates batch folder to save all boids from multiple runs
     global BATCH_PATH
-    # BATCH_PATH = PATH_SOURCE_IMAGE + "_pop" + str(POPULATION_SIZE) + "_genelegnth" + str(NUM_TRIANGLES_PER_GENE) + "_mut" + str(MUTATION_PROB) + "_cross" + str(CROSS_OVER_PROB)
-    # try:
-    #     os.makedirs(BATCH_PATH)
-    # except OSError:
-    #     print ("Creation of the directory %s failed" % BATCH_PATH)
-    # else:
-    #     print ("Successfully created the directory %s" % BATCH_PATH)
+    BATCH_PATH = PATH_SOURCE_IMAGE + "_pop" + str(POPULATION_SIZE) + "_genelegnth" + str(NUM_TRIANGLES_PER_GENE) + "_mut" + str(MUTATION_PROB) + "_cross" + str(CROSS_OVER_PROB)
+    try:
+        os.makedirs(BATCH_PATH)
+    except OSError:
+        print ("Creation of the directory %s failed" % BATCH_PATH)
+    else:
+        print ("Successfully created the directory %s" % BATCH_PATH)
 
     
     # set image and get size of image
