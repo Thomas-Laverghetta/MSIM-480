@@ -68,7 +68,7 @@ class SortedLinkedList:
         probSum = 0.0
         while(parent1 == None or parent2 == None):
             probSum += 1.0/curr.node.fitness
-            pmf = (sprobSumum / self.TotalFitness)
+            pmf = (probSum / self.TotalFitness)
             if parent1 == None and p1_r <= pmf:
                 parent1 = curr.node # deepcopy(curr.node)
             
