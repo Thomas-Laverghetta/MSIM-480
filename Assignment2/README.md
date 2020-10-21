@@ -26,6 +26,7 @@ On output, you should see see a directory created under ./Images called:
 ```
 "<Image name>_pop<population size>_genelength<number of triangles>_mut<mutation probability>_cross<corssover probability>"
 ```
+Within that directory, mimicking images will populate. It will start with initial image (gen 0). Then it will produce best images from population at gen 100, 1000, 10000, 20000, 30000, 50000, 100000. Max generation is 100000. 
 
 # References
 I used https://github.com/DING-PENG/image-approx as reference to create my genetic algorithm. I mainly used their fitness function. 
