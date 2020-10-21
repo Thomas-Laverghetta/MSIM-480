@@ -245,13 +245,13 @@ if __name__ == "__main__":
     global src_img_w
     global src_img_h
     global MUTATION_PROB
-    MUTATION_PROB = 0.05 # float(sys.argv[4])
+    MUTATION_PROB = float(sys.argv[5])
     global CROSS_OVER_PROB
-    CROSS_OVER_PROB = 0.5 # float(sys.argv[3])
+    CROSS_OVER_PROB = float(sys.argv[4])
     PATH_SOURCE_IMAGE = "Images/" + str(sys.argv[1])
 
-    POPULATION_SIZE = 25 #int(sys.argv[1])
-    NUM_TRIANGLES_PER_GENE = 100 #int(sys.argv[2])
+    POPULATION_SIZE = int(sys.argv[2])
+    NUM_TRIANGLES_PER_GENE = int(sys.argv[3])
 
 
     # Creates batch folder to save all boids from multiple runs
