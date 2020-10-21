@@ -22,7 +22,10 @@ LINUX
 $ python .\GeneticImageCreator.py <image name> <population size> <number of triangles per individual> <probability of crossover> <mutation probability>
 ```
 
-On output, you should see see a directory created under ./Images called "<Image name>_pop<population size>_genelength<number of triangles>_mut<mutation probability>_cross<corssover probability>"
+On output, you should see see a directory created under ./Images called:
+```
+"<Image name>_pop<population size>_genelength<number of triangles>_mut<mutation probability>_cross<corssover probability>"
+```
 
 # References
 I used https://github.com/DING-PENG/image-approx as reference to create my genetic algorithm. I mainly used their fitness function. 
