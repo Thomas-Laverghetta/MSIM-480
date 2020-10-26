@@ -14,6 +14,7 @@ public:
 
 		newSet->_next = _head;
 		_head = newSet;
+		_size++;
 	}
 
 	WordList& Pop() {
@@ -23,11 +24,12 @@ public:
 		WordList* wordSet = &curr->_wordList;
 
 		delete curr;
+		_size--;
 
 		return *wordSet;
 	}
 
-	unsigned int GetSize() { return _size; }
+	unsigned int Size() { return _size; }
 private:
 	class WordSet {
 	public:
