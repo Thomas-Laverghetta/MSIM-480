@@ -9,7 +9,7 @@ public:
 		_size = 0;
 	}
 
-	void Push(WordList wordList) {
+	void Push(WordList& wordList) {
 		WordSet* newSet = new WordSet(wordList);
 
 		newSet->_next = _head;
@@ -17,7 +17,7 @@ public:
 		_size++;
 	}
 
-	WordList& Pop() {
+	WordList Pop() {
 		WordSet* curr = _head;
 		_head = _head->_next;
 

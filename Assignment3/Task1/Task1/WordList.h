@@ -32,6 +32,27 @@ public:
 	/// Prints the current puzzle
 	void PrintPuzzle();
 
+	WordList(const WordList& wordList) {
+		this->_numWords = wordList._numWords;
+		if (wordList._head == nullptr)
+			return;
+
+		Word* tmp = wordList._head;
+
+		this->_head = new Word(*tmp);
+		this->_head->_next = nullptr;
+
+		Word* curr = _head;
+
+		tmp = tmp->_next;
+		while (tmp != nullptr) {
+			curr->_next = new Word(*tmp);
+
+			curr = curr->_next;
+			tmp = tmp->_next;
+		}
+	}
+
 	/// Destructor
 	~WordList() {
 		while (_head != nullptr) {
@@ -64,6 +85,17 @@ private:
 			}
 			
 			_next = nullptr;
+		}
+
+		Word(const Word& word) {
+			this->_direction = word._direction;
+			this->_endIndex[0] = word._endIndex[0];
+			this->_endIndex[1] = word._endIndex[1];
+			this->_startIndex[0] = word._startIndex[0];
+			this->_startIndex[1] = word._startIndex[1];
+			this->_word = word._word;
+			this->_wordId = word._wordId;
+			this->_next = nullptr;
 		}
 
 		std::string _word;
