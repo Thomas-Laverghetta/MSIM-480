@@ -1,7 +1,8 @@
-#include "WordQueue.h"
+#include "WordList.h"
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <stack>
 
 using namespace std;
 
@@ -15,28 +16,37 @@ struct ParsedWords {
 WordList * SolutionList;
 bool Backtracking(vector<ParsedWords>& wordSet) {
 	
-	WordQueue queue;
+	stack<WordList*> queue;
 	for (int i = 0; i < wordSet[0].words.size(); i++) {
-		WordList set;
-		set.AddWord(wordSet[0].words[i], wordSet[0].index[0], wordSet[0].index[1], wordSet[0].wordId, wordSet[0].dir);
-		queue.Push(set);
+		WordList * set = new WordList;
+		set->AddWord(wordSet[0].words[i], wordSet[0].index[0], wordSet[0].index[1], wordSet[0].wordId, wordSet[0].dir);
+		queue.push(set);
 	}
-	while (queue.Size() > 0) {
-		WordList list = queue.Pop();
-		if (list.Goal()) {
-			if (list.GetNumWords() == wordSet.size()) {
-				SolutionList = &list;
+	while (queue.size() > 0) {
+		WordList * list = queue.top();
+		if (list->Goal()) {
+			if (list->GetNumWords() == wordSet.size()) {
+				SolutionList = list;	
 				return true;
 			}
 			else {
-				for (int i = 0; i < wordSet[list.GetNumWords()].words.size(); i++) {
-					WordList tempList(list);
-					tempList.AddWord(wordSet[list.GetNumWords()].words[i], wordSet[list.GetNumWords()].index[0], wordSet[list.GetNumWords()].index[1],
-						wordSet[list.GetNumWords()].wordId, wordSet[list.GetNumWords()].dir);
-					queue.Push(tempList);
+				for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
+					WordList *  tempList = new WordList(list);
+					tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+						wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
+					queue.push(tempList);
+				}
+				if (wordSet[list->GetNumWords()].words.size()) {
+					int i = wordSet[list->GetNumWords()].words.size() - 1;
+					list->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+						wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
+					continue;
 				}
 			}
 		}
+		queue.pop();
+		delete list;
+		list = nullptr;
 	}
 
 	// No Solution Found

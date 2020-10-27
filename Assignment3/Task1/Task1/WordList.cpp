@@ -67,10 +67,10 @@ bool WordList::Goal() {
 					if (it1->_word[wordIndex1] != it2->_word[wordIndex2])
 						return false;	// conflict
 				}
-
-
 			}
+			it2 = it2->_next;
 		}
+		it1 = it1->_next;
 	}
 
 	// No conflicts

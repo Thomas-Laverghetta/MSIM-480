@@ -16,6 +16,25 @@ enum WordDirection {
 class WordList {
 public:
 	WordList();
+	WordList(const WordList* wordList) {
+		_numWords = wordList->_numWords;
+		if (wordList->_head == nullptr)
+			return;
+
+		Word* tmp = wordList->_head;
+
+		_head = new Word(tmp);
+
+		Word* curr = _head;
+
+		tmp = tmp->_next;
+		while (tmp != nullptr) {
+			curr->_next = new Word(tmp);
+
+			curr = curr->_next;
+			tmp = tmp->_next;
+		}
+	}
 
 	/// Adds word to current word list
 	void AddWord(std::string word, unsigned int startRow, unsigned int startCol, unsigned int wordId, WordDirection dir);
@@ -31,27 +50,6 @@ public:
 	
 	/// Prints the current puzzle
 	void PrintPuzzle();
-
-	WordList(const WordList& wordList) {
-		this->_numWords = wordList._numWords;
-		if (wordList._head == nullptr)
-			return;
-
-		Word* tmp = wordList._head;
-
-		this->_head = new Word(*tmp);
-		this->_head->_next = nullptr;
-
-		Word* curr = _head;
-
-		tmp = tmp->_next;
-		while (tmp != nullptr) {
-			curr->_next = new Word(*tmp);
-
-			curr = curr->_next;
-			tmp = tmp->_next;
-		}
-	}
 
 	/// Destructor
 	~WordList() {
@@ -87,14 +85,14 @@ private:
 			_next = nullptr;
 		}
 
-		Word(const Word& word) {
-			this->_direction = word._direction;
-			this->_endIndex[0] = word._endIndex[0];
-			this->_endIndex[1] = word._endIndex[1];
-			this->_startIndex[0] = word._startIndex[0];
-			this->_startIndex[1] = word._startIndex[1];
-			this->_word = word._word;
-			this->_wordId = word._wordId;
+		Word(const Word* word) {
+			this->_direction = word->_direction;
+			this->_endIndex[0] = word->_endIndex[0];
+			this->_endIndex[1] = word->_endIndex[1];
+			this->_startIndex[0] = word->_startIndex[0];
+			this->_startIndex[1] = word->_startIndex[1];
+			this->_word = word->_word;
+			this->_wordId = word->_wordId;
 			this->_next = nullptr;
 		}
 
@@ -107,7 +105,7 @@ private:
 		
 		WordDirection _direction;
 		
-		Word* _next = nullptr;
+		Word* _next;
 
 		~Word() {}
 	};

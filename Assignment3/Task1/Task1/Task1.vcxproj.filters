@@ -26,8 +26,5 @@
     <ClInclude Include="WordList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WordQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
