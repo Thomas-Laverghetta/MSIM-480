@@ -85,3 +85,21 @@ void WordList::PopFront()
 
 	delete curr;
 }
+
+void WordList::PrintPuzzle()
+{
+	Word* curr = _head;
+	printf("Variable  |  Cell | Word\n");
+	printf("==============================================\n");
+	while (curr != nullptr) {
+		if (curr->_direction == WordDirection::Across) {
+			printf("%-2i Across | (%i,%i) | %s\n", curr->_wordId, curr->_startIndex[0], curr->_startIndex[1], curr->_word.c_str()); 
+			fflush(stdout);
+		}
+		else {
+			printf("%-2i Down   | (%i,%i) | %s\n", curr->_wordId, curr->_startIndex[0], curr->_startIndex[1], curr->_word.c_str()); 
+			fflush(stdout);
+		}
+		curr = curr->_next;
+	}
+}

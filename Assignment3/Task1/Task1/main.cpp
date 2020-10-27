@@ -66,13 +66,13 @@ vector<ParsedWords> ParseFile(string filename) {
 	string s;
 	string delimiter = ",";
 	while (getline(file, s)) {
-		ParsedWords tempSet;
 		size_t pos = 0;
 		string token;
+		ParsedWords tempSet;
 		int i = 0;
 		while ((pos = s.find(delimiter)) != string::npos) {
 			token = s.substr(0, pos);
-			
+
 			switch (i)
 			{
 			case 0: // word id
@@ -106,7 +106,11 @@ vector<ParsedWords> ParseFile(string filename) {
 
 int main() {
 	vector<ParsedWords> wordSet = ParseFile("test.csv");
-	Backtracking(wordSet);
-
+	if (Backtracking(wordSet)) {
+		SolutionList->PrintPuzzle();
+	}
+	else {
+		printf("NO SOLUTION\n\a"); fflush(stdout);
+	}
 	return 0;
 }

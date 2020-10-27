@@ -61,6 +61,8 @@ public:
 		
 		_numWords = 0;
 	}
+
+	static unsigned int crosswordDimensions[2];
 private:
 	class Word {
 	public:
