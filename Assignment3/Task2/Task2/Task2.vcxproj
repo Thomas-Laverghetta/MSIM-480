@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="parameters.xml" />
+    <Xml Include="treeCrossword.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,16 +15,15 @@ struct ParsedWords {
 	vector<string> words;		// the words following restriction
 
 	/*WordDirection dir;*/
-	int Vsize = 0;
-	int Hsize = 0;
+	int Vmin = 0;
+	int Vmax = 0;
+	int Hmin = 0;
+	int Hmax = 0;
 
 	// restrictions
 	/*WordDirection dir;*/
 	unsigned int index[2];
 	unsigned int wordId;
-
-	// size restrictions
-	/*vector<int> sizes;*/
 };
 
 // Loading from XML parameter file
@@ -57,17 +56,24 @@ vector<ParsedWords> LoadWordRestrictions(const char* filename)
 			pElem->QueryAttribute("col", &temp.index[1]);
 
 
-			int V, H;
-			pElem->QueryAttribute("VSize", &V);
-			pElem->QueryAttribute("HSize", &H);
+			int vmin, vmax, hmin, hmax;
+			pElem->QueryAttribute("Vmin", &vmin);
+			pElem->QueryAttribute("Hmin", &hmin);
+			pElem->QueryAttribute("Hmin", &vmax);
+			pElem->QueryAttribute("Hmin", &hmax);
 
-			if (V > 0) {
-				temp.Vsize = V;
-			}
+			if (vmax > 0)
+				temp.Vmax = vmax;
 			
-			if (H > 0) {
-				temp.Hsize = H;
-			}
+			if (vmin > 0)
+				temp.Vmin = vmin;
+
+			if (hmax > 0)
+				temp.Hmax= hmax;
+
+			if (hmin > 0)
+				temp.Hmin = hmin;
+			
 
 			wordRestrictions.push_back(temp);
 		}
@@ -86,8 +92,9 @@ vector<ParsedWords> DirectionaryFiler(vector<ParsedWords>& wordRestrictions) {
 
 	for (auto& set : wordRestrictions) {
 		for (int j = 0; j < 21120; j++) {
-			if (Directionary[i].length() == set.Hsize || Directionary[i].length() == set.Vsize)
-				set.words.push_back(Directionary[i]);
+			if ((Directionary[j].length() >= set.Hmin && Directionary[j].length() <= set.Hmax) 
+				|| (Directionary[j].length() >= set.Vmin && Directionary[j].length() <= set.Vmax))
+				set.words.push_back(Directionary[j]);
 		}
 	}
 
@@ -99,13 +106,13 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 	stack<WordList*> queue;
 	for (int i = 0; i < wordSet[0].words.size(); i++) {
 		
-		if (wordSet[0].words[i].length() == wordSet[0].Hsize) {
+		if (wordSet[0].words[i].length() >= wordSet[0].Hmin && wordSet[0].words[i].length() <= wordSet[0].Hmax) {
 			WordList* set = new WordList;
 			set->AddWord(wordSet[0].words[i], wordSet[0].index[0], wordSet[0].index[1], wordSet[0].wordId, WordDirection::Across);
 			queue.push(set);
 		}
 		
-		if (wordSet[0].words[i].length() == wordSet[0].Vsize) {
+		if (wordSet[0].words[i].length() >= wordSet[0].Vmin && wordSet[0].words[i].length() <= wordSet[0].Vmax) {
 			WordList* set = new WordList;
 			set->AddWord(wordSet[0].words[i], wordSet[0].index[0], wordSet[0].index[1], wordSet[0].wordId, WordDirection::Down);
 			queue.push(set);
@@ -114,7 +121,7 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 	while (queue.size() > 0) {
 		WordList * list = queue.top();
 		for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
-			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Hsize) {
+			if (wordSet[list->GetNumWords()].words[i].length() >= wordSet[list->GetNumWords()].Hmin && wordSet[list->GetNumWords()].words[i].length() <= wordSet[list->GetNumWords()].Hmax) {
 				WordList* tempList = new WordList(list);
 				tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
 					wordSet[list->GetNumWords()].wordId, WordDirection::Across);
@@ -133,7 +140,7 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					delete tempList;
 				}
 			}
-			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
+			if (wordSet[list->GetNumWords()].words[i].length() >= wordSet[list->GetNumWords()].Vmin && wordSet[list->GetNumWords()].words[i].length() <= wordSet[list->GetNumWords()].Vmax) {
 				WordList* tempList = new WordList(list);
 				tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
 					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
@@ -155,8 +162,8 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 		}
 		if (wordSet[list->GetNumWords()].words.size()) {
 			int i = wordSet[list->GetNumWords()].words.size() - 1;
-			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Hsize 
-				&& wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
+			if (wordSet[list->GetNumWords()].words[i].length() >= wordSet[list->GetNumWords()].Hmin && wordSet[list->GetNumWords()].words[i].length() <= wordSet[list->GetNumWords()].Hmax
+				&& wordSet[list->GetNumWords()].words[i].length() >= wordSet[list->GetNumWords()].Vmin && wordSet[list->GetNumWords()].words[i].length() <= wordSet[list->GetNumWords()].Vmax) {
 
 				WordList* tempList = new WordList(list);
 				tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
@@ -191,7 +198,7 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					delete list;
 				}
 			}
-			else if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
+			else if (wordSet[list->GetNumWords()].words[i].length() >= wordSet[list->GetNumWords()].Vmin && wordSet[list->GetNumWords()].words[i].length() <= wordSet[list->GetNumWords()].Vmax) {
 				list->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
 					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
 				// Testing if new list follow strictions
