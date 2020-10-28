@@ -8,8 +8,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <thread>
+#include <mutex>
+#include <algorithm>    // std::for_each
+#include <functional>   // std::bind
 
 using namespace std;
+
+const size_t nthreads = std::thread::hardware_concurrency();
 
 struct ParsedWords {
 	vector<string> words;		// the words following restriction
@@ -19,12 +24,8 @@ struct ParsedWords {
 	int Hsize = 0;
 
 	// restrictions
-	/*WordDirection dir;*/
 	unsigned int index[2];
 	int wordId;
-
-	// size restrictions
-	/*vector<int> sizes;*/
 };
 
 // Loading from XML parameter file
@@ -109,16 +110,17 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 		}
 	}
 	while (queue.size() > 0) {
-		WordList * list = queue.top();
+		WordList * list = queue.top();		
 		for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
 			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Hsize) {
-				WordList* tempList = new WordList(list);
-				tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+				// Testing if new list follow strictions
+				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
 					wordSet[list->GetNumWords()].wordId, WordDirection::Across);
 
-				// Testing if new list follow strictions
-				if (tempList->Goal()) 
+				if (list->Goal(newWord))
 				{
+					WordList* tempList = new WordList(list);
+					tempList->AddWord(newWord);
 					if (tempList->GetNumWords() == wordSet.size())
 					{
 						SolutionList = tempList;
@@ -127,17 +129,18 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					queue.push(tempList);
 				}
 				else {
-					delete tempList;
+					delete newWord;
 				}
 			}
 			else { //if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
-				WordList* tempList = new WordList(list);
-				tempList->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+				// Testing if new list follow strictions
+				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
 					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
 
-				// Testing if new list follow strictions
-				if (tempList->Goal())
+				if (list->Goal(newWord))
 				{
+					WordList* tempList = new WordList(list);
+					tempList->AddWord(newWord);
 					if (tempList->GetNumWords() == wordSet.size())
 					{
 						SolutionList = tempList;
@@ -146,18 +149,20 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					queue.push(tempList);
 				}
 				else {
-					delete tempList;
+					delete newWord;
 				}
 			}
 		}
 		if (wordSet[list->GetNumWords()].words.size()) {
 			int i = wordSet[list->GetNumWords()].words.size() - 1;
 			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
-				list->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
 				// Testing if new list follow strictions
-				if (list->Goal())
+				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
+
+				if (list->Goal(newWord))
 				{
+					list->AddWord(newWord);
 					if (list->GetNumWords() == wordSet.size())
 					{
 						SolutionList = list;
@@ -165,16 +170,19 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					}
 				}
 				else {
+					delete newWord;
 					queue.pop();
 					delete list;
 				}
 			}
 			else {
-				list->AddWord(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-					wordSet[list->GetNumWords()].wordId, WordDirection::Across);
 				// Testing if new list follow strictions
-				if (list->Goal())
+				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+					wordSet[list->GetNumWords()].wordId, WordDirection::Across);
+
+				if (list->Goal(newWord))
 				{
+					list->AddWord(newWord);
 					if (list->GetNumWords() == wordSet.size())
 					{
 						SolutionList = list;
@@ -182,11 +190,11 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 					}
 				}
 				else {
+					delete newWord;
 					queue.pop();
 					delete list;
 				}
 			}
-			continue;
 		}
 	}
 
@@ -197,7 +205,7 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 int main() {
 	// vector<ParsedWords> wordSet = ParseFile("test.csv");
 	
-	vector<ParsedWords> wordRestriction = LoadWordRestrictions("heartCrossword.xml");
+	vector<ParsedWords> wordRestriction = LoadWordRestrictions("treeCrossword.xml");
 	wordRestriction = DirectionaryFiler(wordRestriction);
 	if (Backtracking(wordRestriction)) {
 		SolutionList->PrintPuzzle();
