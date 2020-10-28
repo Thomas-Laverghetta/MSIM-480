@@ -148,7 +148,7 @@
     <ClCompile Include="WordList.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="parameters.xml" />
+    <Xml Include="heartCrossword.xml" />
     <Xml Include="treeCrossword.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

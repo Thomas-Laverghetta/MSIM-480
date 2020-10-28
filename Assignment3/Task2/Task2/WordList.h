@@ -104,7 +104,7 @@ private:
 		// indexing in col, row format (to support x, y formatting)
 		unsigned int _startIndex[2];	// starting point
 		unsigned int _endIndex[2];		// ending point
-		unsigned int _wordId;
+		int _wordId;
 		
 		WordDirection _direction;
 		
