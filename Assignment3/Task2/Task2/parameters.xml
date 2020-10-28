@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<objects>
+
+  <word 
+    wordId="0" 
+    row="1"
+    col="1"
+    VSize="1" 
+    HSize="2" 
+    ></word>
+   <word 
+    wordId="1" 
+    row="3"
+    col="1"
+    VSize="5" 
+    ></word>
+</objects>
