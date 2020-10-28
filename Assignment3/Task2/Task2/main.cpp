@@ -5,16 +5,12 @@
 #include <stack>
 #include "tinyxml2.h"
 #include <string>
-#include <stdio.h>
-#include <string.h>
 #include <thread>
 #include <mutex>
-#include <algorithm>    // std::for_each
-#include <functional>   // std::bind
+#include <chrono>
 
 using namespace std;
-
-const size_t nthreads = std::thread::hardware_concurrency();
+const size_t nthreads = 2;
 
 struct ParsedWords {
 	vector<string> words;		// the words following restriction
@@ -96,6 +92,10 @@ vector<ParsedWords> DirectionaryFiler(vector<ParsedWords>& wordRestrictions) {
 
 WordList * SolutionList;
 bool Backtracking(vector<ParsedWords>& wordSet) {
+	mutex lock;
+	bool * Solved = new bool[nthreads]; for (int i = 0; i < nthreads; i++) { Solved[i] = false; }
+	thread* cT = new thread[nthreads];
+
 	stack<WordList*> queue;
 	for (int i = 0; i < wordSet[0].words.size(); i++) {
 		if (wordSet[0].words[i].length() == wordSet[0].Hsize) {
@@ -111,48 +111,116 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 	}
 	while (queue.size() > 0) {
 		WordList * list = queue.top();		
-		for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
-			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Hsize) {
-				// Testing if new list follow strictions
-				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-					wordSet[list->GetNumWords()].wordId, WordDirection::Across);
 
-				if (list->Goal(newWord))
-				{
-					WordList* tempList = new WordList(list);
-					tempList->AddWord(newWord);
-					if (tempList->GetNumWords() == wordSet.size())
+		// lambda function
+		auto nextLayer = [&](unsigned int start, unsigned int numIts, bool& solution) {
+			for (int i = 0; i < numIts; i++) {
+				if (wordSet[list->GetNumWords()].words[i + start].length() == wordSet[list->GetNumWords()].Hsize) {
+					// Testing if new list follow strictions
+					WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i + start], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+						wordSet[list->GetNumWords()].wordId, WordDirection::Across);
+
+					if (list->Goal(newWord))
 					{
-						SolutionList = tempList;
-						return true;
+						WordList* tempList = new WordList(list);
+						tempList->AddWord(newWord);
+						if (tempList->GetNumWords() == wordSet.size())
+						{
+							SolutionList = tempList;
+							solution = true;
+							return; //return true;
+						}
+						lock.lock();
+						queue.push(tempList);
+						lock.unlock();
 					}
-					queue.push(tempList);
+					else {
+						delete newWord;
+					}
 				}
-				else {
-					delete newWord;
+				else { //if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
+					// Testing if new list follow strictions
+					WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i + start], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+						wordSet[list->GetNumWords()].wordId, WordDirection::Down);
+
+					if (list->Goal(newWord))
+					{
+						WordList* tempList = new WordList(list);
+						tempList->AddWord(newWord);
+						if (tempList->GetNumWords() == wordSet.size())
+						{
+							SolutionList = tempList;
+							solution = true;
+							return; //return true;
+						}
+						lock.lock();
+						queue.push(tempList);
+						lock.unlock();
+					}
+					else {
+						delete newWord;
+					}
 				}
 			}
-			else { //if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
-				// Testing if new list follow strictions
-				WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-					wordSet[list->GetNumWords()].wordId, WordDirection::Down);
+		};
 
-				if (list->Goal(newWord))
-				{
-					WordList* tempList = new WordList(list);
-					tempList->AddWord(newWord);
-					if (tempList->GetNumWords() == wordSet.size())
-					{
-						SolutionList = tempList;
-						return true;
-					}
-					queue.push(tempList);
-				}
-				else {
-					delete newWord;
-				}
-			}
+		
+		unsigned int numIts = (wordSet[list->GetNumWords()].words.size() - 1) / nthreads;
+		unsigned int remainingIts = (wordSet[list->GetNumWords()].words.size() - 1) % nthreads;
+		unsigned int start = 0;
+		for (int n = 0; n < nthreads; n++) {
+			int its = numIts + (remainingIts > 0 ? 1 + (remainingIts - (--remainingIts)) : 0);
+			cT[n] = thread(nextLayer, start, its, ref(Solved[n]));
+			start += its;
 		}
+
+		for (int n = 0; n < nthreads; n++) {
+			cT[n].join();
+			if (Solved[n]) return true;
+		}
+		
+		//for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
+		//	if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Hsize) {
+		//		// Testing if new list follow strictions
+		//		WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+		//			wordSet[list->GetNumWords()].wordId, WordDirection::Across);
+
+		//		if (list->Goal(newWord))
+		//		{
+		//			WordList* tempList = new WordList(list);
+		//			tempList->AddWord(newWord);
+		//			if (tempList->GetNumWords() == wordSet.size())
+		//			{
+		//				SolutionList = tempList;
+		//				return true;
+		//			}
+		//			queue.push(tempList);
+		//		}
+		//		else {
+		//			delete newWord;
+		//		}
+		//	}
+		//	else { //if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
+		//		// Testing if new list follow strictions
+		//		WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
+		//			wordSet[list->GetNumWords()].wordId, WordDirection::Down);
+
+		//		if (list->Goal(newWord))
+		//		{
+		//			WordList* tempList = new WordList(list);
+		//			tempList->AddWord(newWord);
+		//			if (tempList->GetNumWords() == wordSet.size())
+		//			{
+		//				SolutionList = tempList;
+		//				return true;
+		//			}
+		//			queue.push(tempList);
+		//		}
+		//		else {
+		//			delete newWord;
+		//		}
+		//	}
+		//}
 		if (wordSet[list->GetNumWords()].words.size()) {
 			int i = wordSet[list->GetNumWords()].words.size() - 1;
 			if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
@@ -205,14 +273,19 @@ bool Backtracking(vector<ParsedWords>& wordSet) {
 int main() {
 	// vector<ParsedWords> wordSet = ParseFile("test.csv");
 	
-	vector<ParsedWords> wordRestriction = LoadWordRestrictions("treeCrossword.xml");
+	vector<ParsedWords> wordRestriction = LoadWordRestrictions("heartCrossword.xml");
 	wordRestriction = DirectionaryFiler(wordRestriction);
+
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	if (Backtracking(wordRestriction)) {
 		SolutionList->PrintPuzzle();
 	}
 	else {
 		printf("NO SOLUTION\n\a"); fflush(stdout);
 	}
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+	std::cout << "\nTime difference = " << ((double)std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) * 1e-6 << "[s]" << std::endl;
 
 	return 0;
 }
