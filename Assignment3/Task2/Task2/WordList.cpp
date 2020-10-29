@@ -75,29 +75,6 @@ bool WordList::Goal() {
 						return false;	// conflict
 				}
 			}
-			// checking if lines overlap
-			else if (it1->_direction == WordDirection::Down && it1->_endIndex[0] == it2->_endIndex[0]) { // vertical line overlaps
-				if (it1->_endIndex[1] > it2->_endIndex[1] && it1->_startIndex[1] <= it2->_endIndex[1]) {
-					return false; // overlap
-				}
-				else if (it2->_endIndex[1] > it1->_endIndex[1] && it2->_startIndex[1] <= it1->_endIndex[1]) {
-					return false; // overlap
-				}
-				else if (it1->_endIndex[1] == it2->_endIndex[1]) {
-					return false; // overlap
-				}
-			}
-			else if (it1->_direction == WordDirection::Across && it1->_endIndex[1] == it2->_endIndex[1]) { // harizontle line overlaps
-				if (it1->_endIndex[0] > it2->_endIndex[0] && it1->_startIndex[0] <= it2->_endIndex[0]) {
-					return false; // overlap
-				}
-				else if (it2->_endIndex[0] > it1->_endIndex[0] && it2->_startIndex[0] <= it1->_endIndex[0]) {
-					return false; // overlap
-				}
-				else if (it1->_endIndex[0] == it2->_endIndex[0]) {
-					return false; // overlap
-				}
-			}
 			it2 = it2->_next;
 		}
 		it1 = it1->_next;
@@ -156,29 +133,6 @@ bool WordList::Goal(Word* it2)
 				if (it1->_word[wordIndex1] != it2->_word[wordIndex2]) {
 					return false;	// conflict
 				}
-			}
-		}
-		// checking if lines overlap
-		else if (it1->_direction == WordDirection::Down && it1->_endIndex[0] == it2->_endIndex[0]) { // vertical line overlaps
-			if (it1->_endIndex[1] > it2->_endIndex[1] && it1->_startIndex[1] <= it2->_endIndex[1]) {
-				return false; // overlap
-			}
-			else if (it2->_endIndex[1] > it1->_endIndex[1] && it2->_startIndex[1] <= it1->_endIndex[1]) {
-				return false; // overlap
-			}
-			else if (it1->_endIndex[1] == it2->_endIndex[1]) {
-				return false; // overlap
-			}
-		}
-		else if (it1->_direction == WordDirection::Across && it1->_endIndex[1] == it2->_endIndex[1]) { // harizontle line overlaps
-			if (it1->_endIndex[0] > it2->_endIndex[0] && it1->_startIndex[0] <= it2->_endIndex[0]) {
-				return false; // overlap
-			}
-			else if (it2->_endIndex[0] > it1->_endIndex[0] && it2->_startIndex[0] <= it1->_endIndex[0]) {
-				return false; // overlap
-			}
-			else if (it1->_endIndex[0] == it2->_endIndex[0]) {
-				return false; // overlap
 			}
 		}
 		it1 = it1->_next;

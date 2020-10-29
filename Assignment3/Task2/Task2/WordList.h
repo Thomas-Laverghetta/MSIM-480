@@ -8,12 +8,6 @@
 #pragma once
 #include <string>
 
-enum WordDirection {
-	Across, 
-	Down,
-	ANY
-};
-
 class WordList {
 public:
 	class Word {
