@@ -281,23 +281,22 @@ bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordEleme
 	return true;
 }
 
-vector<Word> Solution;
-bool Backtracking(vector<Word> currWords, vector<WordElementSet> wordSet) {
+bool Backtracking(WordList& currWords, vector<WordElementSet> wordSet) {
 	WordElementSet nextWords;
-	if (NextWordSet(currWords.back(), wordSet, nextWords)) {
+	if (NextWordSet(*currWords.top(), wordSet, nextWords)) {
 		Word newWord;
 		newWord.wordId = nextWords.wordId;
+		currWords.AddWord(newWord);
 		for (auto& word : nextWords.words) {
-			newWord.word = word;
-			currWords.push_back(newWord);
+			currWords.top()->word = word;
 			if (wordSet.size() == 0) {
-				Solution = currWords;
 				return true;
 			}
 			if (Backtracking(currWords, wordSet))
 				return true;
-			currWords.pop_back();
 		}
+		// remove top word
+		currWords.pop();
 	}
 	return false;
 }
@@ -315,48 +314,23 @@ int main() {
 	// starting timer
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
+	// Getting first word set to iterate
 	WordElementSet startingWords = wordSet.back();
 	wordSet.pop_back();
 	
-	vector<Word> set;
-	Word initWord; initWord.wordId = startingWords.wordId;
-	set.push_back(initWord);
+	WordList set; Word initWord; initWord.wordId = startingWords.wordId;
+	set.AddWord(initWord);
 	for (auto& word : startingWords.words) {
-		set[0].word = word;
+		set.top()->word = word;
 		if (Backtracking(set, wordSet))
 			break;
 	}
+
+	// stopping timer
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-	if (Solution.size() > 0) {
-		// sorting by id
-		bool swapped;
-		for (int i = 0; i < Solution.size() - 1; i++)
-		{
-			swapped = false;
-			for (int j = 0; j < Solution.size() - i - 1; j++)
-			{
-				if (Solution[j].wordId > Solution[j + 1].wordId)
-				{
-					Word tmp = Solution[j];
-					Solution[j] = Solution[j + 1];
-					Solution[j + 1] = tmp;
-					swapped = true;
-				}
-			}
-
-			// IF no two elements were swapped by inner loop, then break 
-			if (swapped == false)
-				break;
-		}
-
-		printf("Word ID | Word\n");
-		printf("========================\n");
-		for (auto& word : Solution) {
-			printf("%-4i | %s\n", word.wordId, word.word.c_str());
-		}
-		
-		printf("\n\t *Negative IDs are the horizontal (across) counterpart for vertical/horizontal words\n");
+	if (set.size() > 1) {
+		set.Print();
 	}
 	else {
 		printf("NO SOLUTION\n\a");
