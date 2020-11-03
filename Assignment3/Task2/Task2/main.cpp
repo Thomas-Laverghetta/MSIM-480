@@ -12,8 +12,7 @@
 
 enum WordDirection {
 	Across,
-	Down,
-	ANY
+	Down
 };
 
 using namespace std;
@@ -344,11 +343,34 @@ int main() {
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 	if (Solution.size() > 0) {
+		// sorting by id
+		bool swapped;
+		for (int i = 0; i < Solution.size() - 1; i++)
+		{
+			swapped = false;
+			for (int j = 0; j < Solution.size() - i - 1; j++)
+			{
+				if (Solution[j].wordId > Solution[j + 1].wordId)
+				{
+					Word tmp = Solution[j];
+					Solution[j] = Solution[j + 1];
+					Solution[j + 1] = tmp;
+					swapped = true;
+				}
+			}
+
+			// IF no two elements were swapped by inner loop, then break 
+			if (swapped == false)
+				break;
+		}
+
 		printf("Word ID | Word\n");
 		printf("========================\n");
 		for (auto& word : Solution) {
 			printf("%-4i | %s\n", word.wordId, word.word.c_str());
 		}
+		
+		printf("\n\t *Negative IDs are the horizontal (across) counterpart for vertical/horizontal words\n");
 	}
 	else {
 		printf("NO SOLUTION\n\a");
