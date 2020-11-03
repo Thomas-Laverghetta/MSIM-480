@@ -140,12 +140,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="tinyxml2.h" />
-    <ClInclude Include="WordList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tinyxml2.cpp" />
-    <ClCompile Include="WordList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="heartCrossword.xml" />

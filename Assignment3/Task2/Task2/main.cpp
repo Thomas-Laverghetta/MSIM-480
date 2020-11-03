@@ -43,14 +43,16 @@ struct ParsedWords {
 };
 
 struct Intersect {
+	Intersect(int wordID, int wordIndex, int originWordindex)
+		: wordId(wordID), wordIndex(wordIndex), originWordIndex(originWordindex) {}
 	int wordId;
-	int thisWordIndex;
-	int otherWordIndex;
+	int wordIndex;
+	int originWordIndex;
 };
 // wordId, intersection
 unordered_map<int, vector<Intersect>> IntersectionMap;
 
-struct WordStates {
+struct WordElementSet {
 	int wordId;
 	vector<string> words;
 };
@@ -172,19 +174,13 @@ void ItersectionFinder(vector<ParsedWords>& wordSet) {
 						wordIndex2 = row - w2.index[0];
 					}
 
-					Intersect sect;
+					/*Intersect sect;
 					sect.wordId = w2.wordId;
 					sect.thisWordIndex = wordIndex2;
-					sect.otherWordIndex = wordIndex2;
+					sect.otherWordIndex = wordIndex2;*/
 
 					// mapping intersection
-					IntersectionMap[w1.wordId].push_back(sect);
-
-					//// comparing words
-					//if (it1->_word[wordIndex1] != it2->_word[wordIndex2]) {
-					//	// conflict
-
-					//}
+					IntersectionMap[w1.wordId].push_back(Intersect(w2.wordId, wordIndex2, wordIndex1));
 				}
 			}
 		}
@@ -192,16 +188,17 @@ void ItersectionFinder(vector<ParsedWords>& wordSet) {
 }
 
 // Data filter based on word restrictions from XML
-vector<WordStates> DirectionaryFiler(vector<ParsedWords>& wordSet) {
+vector<WordElementSet> DirectionaryFiler(vector<ParsedWords>& wordSet) {
 	// Getting all words from directory
 	string Directionary[21120];
 	ifstream DirectionaryFile("Directionary.txt");
 	string tmp; int i = 0;
 	while (DirectionaryFile >> tmp) { Directionary[i] = tmp; i++; }
 
-	vector<WordStates> wordStates(wordSet.size());
+	vector<WordElementSet> wordStates(wordSet.size());
 
 	for (int i = 0; i < wordStates.size(); i++) {
+		wordStates[i].wordId = wordSet[i].wordId;
 		for (int j = 0; j < 21120; j++) {
 			if (Directionary[j].length() == wordSet[i].size)
 				wordStates[i].words.push_back(Directionary[j]);
@@ -214,202 +211,150 @@ struct Word {
 	string word;
 	int wordId;
 };
-vector<WordStates> Query(vector<Word> currWords, vector<WordStates> otherWords) {
-	vector<WordStates> newStates = otherWords;
+bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordElementSet& nextWords) {
+	vector<WordElementSet> tmpSet;
 
+	// finding intersecting word elements then determining if element set contains word that conforms with restrictions
+	for (auto& sect : IntersectionMap[newWord.wordId]) {
+		// determining if intersect exists
+		auto it = find_if(wordSet.begin(), wordSet.end(), [&sect](const WordElementSet& obj) { return obj.wordId == sect.wordId; });
+		if (it != wordSet.end()) {
+			WordElementSet newState;
+			newState.wordId = it->wordId;
+			for (auto& word : it->words) {
+				// checking intersection point between new word and this word
+				if (word[sect.wordIndex] == newWord.word[sect.originWordIndex])
+					newState.words.push_back(word);
+			}
+			// determining if anywords conformed to restrictions
+			if (newState.words.size() > 0)
+				tmpSet.push_back(newState);
+			else // no word conformed
+				return false;
+		}
+	}
+
+	// if all intersections are in crossword
+	if (tmpSet.size() == 0) {
+		// bubble sort for number of solutions
+		bool swapped;
+		for (int i = wordSet.size() - 1; i >= 0; i--)
+		{
+			swapped = false;
+			for (int j = wordSet.size() - 1; j > wordSet.size() - i - 1; j--)
+			{
+				if (wordSet[j].words.size() > wordSet[j - 1].words.size())
+				{
+					WordElementSet tmp = wordSet[j];
+					wordSet[j] = wordSet[j - 1];
+					wordSet[j - 1] = tmp;
+					swapped = true;
+				}
+			}
+
+			// IF no two elements were swapped by inner loop, then break 
+			if (swapped == false)
+				break;
+		}
+
+
+		// get the last element and set it to next word
+		nextWords = wordSet.back();
+		wordSet.pop_back();			// remove last element
+		return true;
+	}
+
+	// bubble sort for number of solutions
+	bool swapped;
+	for (int i = 0; i < tmpSet.size() - 1; i++)
+	{
+		swapped = false;
+		for (int j = 0; j < tmpSet.size() - i - 1; j++)
+		{
+			if (tmpSet[j].words.size() > tmpSet[j + 1].words.size())
+			{
+				WordElementSet tmp = tmpSet[j];
+				tmpSet[j] = tmpSet[j + 1];
+				tmpSet[j + 1] = tmp;
+				swapped = true;
+			}
+		}
+
+		// IF no two elements were swapped by inner loop, then break 
+		if (swapped == false)
+			break;
+	}
+
+	// set next element and remove same element from set
+	nextWords = tmpSet[0];
+	wordSet.erase(find_if(wordSet.begin(), wordSet.end(), [&tmpSet](const WordElementSet& obj) { return obj.wordId == tmpSet[0].wordId; }));
+
+	// replacing old words with new words (filtered words)
+	for (int i = 1; i < tmpSet.size(); i++) {
+		auto it = find_if(wordSet.begin(), wordSet.end(), [&tmpSet, &i](const WordElementSet& obj) { return obj.wordId == tmpSet[i].wordId; });
+		(*it) = tmpSet[i];
+	}
+
+	return true;
 }
 
-//bool Backtracking() {
-//	/*mutex lock;
-//	bool * Solved = new bool[nthreads]; for (int i = 0; i < nthreads; i++) { Solved[i] = false; }
-//	thread* cT = new thread[nthreads];*/
-//
-//	stack<WordList*> queue;
-//	for (int i = 0; i < wordSet[0].words.size(); i++) {
-//		WordList* set = new WordList;
-//		set->AddWord(wordSet[0].words[i], wordSet[0].index[0], wordSet[0].index[1], wordSet[0].wordId, wordSet[0].dir);
-//		queue.push(set);
-//	}
-//	while (queue.size() > 0) {
-//		WordList * list = queue.top();	
-//		queue.pop();
-//
-//		//// lambda function
-//		//auto nextLayer = [&](unsigned int start, unsigned int numIts, bool& solution) {
-//		//	for (int i = 0; i < numIts; i++) {
-//		//		if (wordSet[list->GetNumWords()].words[i + start].length() == wordSet[list->GetNumWords()].Hsize) {
-//		//			// Testing if new list follow strictions
-//		//			WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i + start], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//		//				wordSet[list->GetNumWords()].wordId, WordDirection::Across);
-//
-//		//			if (list->Goal(newWord))
-//		//			{
-//		//				WordList* tempList = new WordList(list);
-//		//				tempList->AddWord(newWord);
-//		//				if (tempList->GetNumWords() == wordSet.size())
-//		//				{
-//		//					SolutionList = tempList;
-//		//					solution = true;
-//		//					return; //return true;
-//		//				}
-//		//				lock.lock();
-//		//				queue.push(tempList);
-//		//				lock.unlock();
-//		//			}
-//		//			else {
-//		//				delete newWord;
-//		//			}
-//		//		}
-//		//		else { //if (wordSet[list->GetNumWords()].words[i].length() == wordSet[list->GetNumWords()].Vsize) {
-//		//			// Testing if new list follow strictions
-//		//			WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i + start], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//		//				wordSet[list->GetNumWords()].wordId, WordDirection::Down);
-//
-//		//			if (list->Goal(newWord))
-//		//			{
-//		//				WordList* tempList = new WordList(list);
-//		//				tempList->AddWord(newWord);
-//		//				if (tempList->GetNumWords() == wordSet.size())
-//		//				{
-//		//					SolutionList = tempList;
-//		//					solution = true;
-//		//					return; //return true;
-//		//				}
-//		//				lock.lock();
-//		//				queue.push(tempList);
-//		//				lock.unlock();
-//		//			}
-//		//			else {
-//		//				delete newWord;
-//		//			}
-//		//		}
-//		//	}
-//		//};
-//
-//		//
-//		//unsigned int numIts = (wordSet[list->GetNumWords()].words.size() - 1) / nthreads;
-//		//unsigned int remainingIts = (wordSet[list->GetNumWords()].words.size() - 1) % nthreads;
-//		//unsigned int start = 0;
-//		//for (int n = 0; n < nthreads; n++) {
-//		//	int its = numIts + (remainingIts > 0 ? 1 + (remainingIts - (--remainingIts)) : 0);
-//		//	cT[n] = thread(nextLayer, start, its, ref(Solved[n]));
-//		//	start += its;
-//		//}
-//
-//		//for (int n = 0; n < nthreads; n++) {
-//		//	cT[n].join();
-//		//	if (Solved[n]) return true;
-//		//}
-//		
-//		for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
-//			// Testing if new list follow strictions
-//			WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//				wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
-//
-//			if (list->Goal(newWord))
-//			{
-//				WordList* tempList = new WordList(list);
-//				tempList->AddWord(newWord);
-//				if (tempList->GetNumWords() == wordSet.size())
-//				{
-//					SolutionList = tempList;
-//					return true;
-//				}
-//				queue.push(tempList);
-//			}
-//			else {
-//				delete newWord;
-//			}
-//			
-//		}
-//		if (wordSet[list->GetNumWords()].words.size()) {
-//			int i = wordSet[list->GetNumWords()].words.size() - 1;
-//			// Testing if new list follow strictions
-//			WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//				wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
-//
-//			if (list->Goal(newWord))
-//			{
-//				list->AddWord(newWord);
-//				if (list->GetNumWords() == wordSet.size())
-//				{
-//					SolutionList = list;
-//					return true;
-//				}
-//				queue.push(list);
-//			}
-//			else {
-//				delete newWord;
-//				delete list;
-//			}
-//		}
-//	}
-//
-//	// No Solution Found
-//	return false;
-//}
-//
-//bool Recursion_Backtracking(WordList* list) {
-//	for (int i = 0; i < wordSet[list->GetNumWords()].words.size() - 1; i++) {
-//		// Testing if new list follow strictions
-//		WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//			wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
-//
-//		if (list->Goal(newWord))
-//		{
-//			WordList* tempList = new WordList(list);
-//			tempList->AddWord(newWord);
-//			if (tempList->GetNumWords() == wordSet.size())
-//			{
-//				SolutionList = tempList;
-//				return true;
-//			}
-//			if (Recursion_Backtracking(tempList))
-//				return true;
-//		}
-//		else {
-//			delete newWord;
-//		}
-//
-//	}
-//	if (wordSet[list->GetNumWords()].words.size()) {
-//		int i = wordSet[list->GetNumWords()].words.size() - 1;
-//		// Testing if new list follow strictions
-//		WordList::Word* newWord = new WordList::Word(wordSet[list->GetNumWords()].words[i], wordSet[list->GetNumWords()].index[0], wordSet[list->GetNumWords()].index[1],
-//			wordSet[list->GetNumWords()].wordId, wordSet[list->GetNumWords()].dir);
-//
-//		if (list->Goal(newWord))
-//		{
-//			list->AddWord(newWord);
-//			if (list->GetNumWords() == wordSet.size())
-//			{
-//				SolutionList = list;
-//				return true;
-//			}
-//			if (Recursion_Backtracking(list)) {
-//				return true;
-//			}
-//		}
-//		else {
-//			delete newWord;
-//			delete list;
-//		}
-//	}
-//	return false;
-//}
+vector<Word> Solution;
+bool Backtracking(vector<Word> currWords, vector<WordElementSet> wordSet) {
+	WordElementSet nextWords;
+	if (NextWordSet(currWords.back(), wordSet, nextWords)) {
+		Word newWord;
+		newWord.wordId = nextWords.wordId;
+		for (auto& word : nextWords.words) {
+			newWord.word = word;
+			currWords.push_back(newWord);
+			if (wordSet.size() == 0) {
+				Solution = currWords;
+				return true;
+			}
+			if (Backtracking(currWords, wordSet))
+				return true;
+			currWords.pop_back();
+		}
+	}
+	return false;
+}
 
 int main() {
-	vector<ParsedWords> wordSet = LoadWordRestrictions("heartCrossword.xml");
-	vector<WordStates> states = DirectionaryFiler(wordSet);
+	vector<ParsedWords> parsedWords = LoadWordRestrictions("heartCrossword.xml");
+
+	// populating intersection map
+	ItersectionFinder(parsedWords);
+	
+	
+	vector<WordElementSet> wordSet = DirectionaryFiler(parsedWords);
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	if () {
-		
-	}
-	else {
-		printf("NO SOLUTION\n\a"); fflush(stdout);
+
+	WordElementSet startingWords = wordSet.back();
+	wordSet.pop_back();
+	
+	vector<Word> set;
+	Word initWord; initWord.wordId = startingWords.wordId;
+	set.push_back(initWord);
+	for (auto& word : startingWords.words) {
+		set[0].word = word;
+		if (Backtracking(set, wordSet))
+			break;
 	}
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+	if (Solution.size() > 0) {
+		printf("Word ID | Word\n");
+		printf("========================\n");
+		for (auto& word : Solution) {
+			printf("%-4i | %s\n", word.wordId, word.word.c_str());
+		}
+	}
+	else {
+		printf("NO SOLUTION\n\a");
+	}
+	fflush(stdout);
+
 
 	std::cout << "\nTime difference = " << ((double)std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) * 1e-6 << "[s]" << std::endl;
 
