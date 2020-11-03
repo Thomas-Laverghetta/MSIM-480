@@ -1,33 +1,27 @@
 //#include "WordList.h"
 #include <vector>
-#include <fstream>
 #include <iostream>
-#include <stack>
+#include <fstream>
 #include "tinyxml2.h"
 #include <string>
-#include <thread>
-#include <mutex>
 #include <chrono>
 #include <unordered_map>
+#include "WordList.hpp"
 
+using namespace std;
+
+// direction of word in crossword
 enum WordDirection {
 	Across,
 	Down
 };
-
-using namespace std;
-const size_t nthreads = 2;
-//WordList* SolutionList;
-
 struct ParsedWords {
-	//vector<string> words;		// the words following restriction
-
-	WordDirection dir;
-	int size = 0;
+	WordDirection dir;	// direction of words in set
+	int size = 0;		// size of word
 
 	// restrictions
-	unsigned int index[2];
-	int wordId;
+	unsigned int index[2];	// location of word
+	int wordId;				// word identifier
 	
 	void operator=(const ParsedWords& copy) {
 		this->dir = copy.dir;
@@ -35,26 +29,19 @@ struct ParsedWords {
 		this->index[1] = copy.index[1];
 		this->size = copy.size;
 		this->wordId = copy.wordId;
-		/*for (auto& w : copy.words) {
-			words.push_back(w);
-		}*/
 	}
 };
 
+// intersection indexing
 struct Intersect {
 	Intersect(int wordID, int wordIndex, int originWordindex)
 		: wordId(wordID), wordIndex(wordIndex), originWordIndex(originWordindex) {}
-	int wordId;
+	int wordId;				// word id 
 	int wordIndex;
 	int originWordIndex;
 };
 // wordId, intersection
 unordered_map<int, vector<Intersect>> IntersectionMap;
-
-struct WordElementSet {
-	int wordId;
-	vector<string> words;
-};
 
 
 // Loading from XML parameter file
@@ -206,10 +193,7 @@ vector<WordElementSet> DirectionaryFiler(vector<ParsedWords>& wordSet) {
 	return wordStates;
 }
 
-struct Word {
-	string word;
-	int wordId;
-};
+
 bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordElementSet& nextWords) {
 	vector<WordElementSet> tmpSet;
 
@@ -319,14 +303,16 @@ bool Backtracking(vector<Word> currWords, vector<WordElementSet> wordSet) {
 }
 
 int main() {
+	// parsing words from XML file
 	vector<ParsedWords> parsedWords = LoadWordRestrictions("heartCrossword.xml");
 
 	// populating intersection map
 	ItersectionFinder(parsedWords);
 	
-	
+	// getting words
 	vector<WordElementSet> wordSet = DirectionaryFiler(parsedWords);
 
+	// starting timer
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 	WordElementSet startingWords = wordSet.back();
