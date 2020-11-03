@@ -22,7 +22,7 @@ struct ParsedWords {
 	// restrictions
 	unsigned int index[2];	// location of word
 	int wordId;				// word identifier
-	
+
 	void operator=(const ParsedWords& copy) {
 		this->dir = copy.dir;
 		this->index[0] = copy.index[0];
@@ -68,8 +68,8 @@ vector<ParsedWords> LoadWordRestrictions(const char* filename)
 			ParsedWords temp;
 			/*const char* stateName;
 			pElem->QueryStringAttribute("name", &stateName);*/
-				
-			pElem->QueryAttribute("wordId", &temp.wordId);	
+
+			pElem->QueryAttribute("wordId", &temp.wordId);
 			pElem->QueryAttribute("row", &temp.index[0]);
 			pElem->QueryAttribute("col", &temp.index[1]);
 
@@ -95,7 +95,7 @@ vector<ParsedWords> LoadWordRestrictions(const char* filename)
 }
 
 void ItersectionFinder(vector<ParsedWords>& wordSet) {
-	for (auto& w1: wordSet){
+	for (auto& w1 : wordSet) {
 		for (auto& w2 : wordSet) {
 			if (w1.wordId == w2.wordId)
 				continue;
@@ -117,7 +117,7 @@ void ItersectionFinder(vector<ParsedWords>& wordSet) {
 				endIndex2[1] = w2.index[1];
 				endIndex2[0] = w2.index[0] + w2.size - 1;
 			}
-			
+
 
 			int A1 = (endIndex1[1] - w1.index[1]);
 			int A2 = (endIndex2[1] - w2.index[1]);
@@ -193,9 +193,29 @@ vector<WordElementSet> DirectionaryFiler(vector<ParsedWords>& wordSet) {
 	return wordStates;
 }
 
+class DynamicArray {
+public:
+	DynamicArray(int numElements) {
+		_size = 0;
+		arr = new WordElementSet[numElements];
+	}
+	void push_back(WordElementSet wes) {
+		arr[_size] = wes;
+		_size++;
+	}
 
+	unsigned int size() { return _size; }
+
+	WordElementSet& operator[](int index) {
+		return arr[index];
+	}
+	~DynamicArray() { delete[] arr; }
+private:
+	WordElementSet* arr;
+	unsigned int _size;
+};
 bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordElementSet& nextWords) {
-	vector<WordElementSet> tmpSet;
+	DynamicArray tmpSet(IntersectionMap[newWord.wordId].size());
 
 	// finding intersecting word elements then determining if element set contains word that conforms with restrictions
 	for (auto& sect : IntersectionMap[newWord.wordId]) {
@@ -210,8 +230,9 @@ bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordEleme
 					newState.words.push_back(word);
 			}
 			// determining if anywords conformed to restrictions
-			if (newState.words.size() > 0)
+			if (newState.words.size() > 0) {
 				tmpSet.push_back(newState);
+			}
 			else // no word conformed
 				return false;
 		}
@@ -281,22 +302,23 @@ bool NextWordSet(const Word& newWord, vector<WordElementSet>& wordSet, WordEleme
 	return true;
 }
 
-bool Backtracking(WordList& currWords, vector<WordElementSet> wordSet) {
+vector<Word> Solution;
+bool Backtracking(vector<Word>& currWords, vector<WordElementSet> wordSet) {
 	WordElementSet nextWords;
-	if (NextWordSet(*currWords.top(), wordSet, nextWords)) {
+	if (NextWordSet(currWords.back(), wordSet, nextWords)) {
 		Word newWord;
 		newWord.wordId = nextWords.wordId;
-		currWords.AddWord(newWord);
 		for (auto& word : nextWords.words) {
-			currWords.top()->word = word;
+			newWord.word = word;
+			currWords.push_back(newWord);
 			if (wordSet.size() == 0) {
+				Solution = currWords;
 				return true;
 			}
 			if (Backtracking(currWords, wordSet))
 				return true;
+			currWords.pop_back();
 		}
-		// remove top word
-		currWords.pop();
 	}
 	return false;
 }
@@ -307,30 +329,56 @@ int main() {
 
 	// populating intersection map
 	ItersectionFinder(parsedWords);
-	
+
 	// getting words
 	vector<WordElementSet> wordSet = DirectionaryFiler(parsedWords);
 
 	// starting timer
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-	// Getting first word set to iterate
 	WordElementSet startingWords = wordSet.back();
 	wordSet.pop_back();
-	
-	WordList set; Word initWord; initWord.wordId = startingWords.wordId;
-	set.AddWord(initWord);
+
+	vector<Word> set;
+	set.reserve(parsedWords.size());
+	Word initWord; initWord.wordId = startingWords.wordId;
+	set.push_back(initWord);
 	for (auto& word : startingWords.words) {
-		set.top()->word = word;
+		set[0].word = word;
 		if (Backtracking(set, wordSet))
 			break;
 	}
-
-	// stopping timer
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-	if (set.size() > 1) {
-		set.Print();
+	if (Solution.size() > 0) {
+		// sorting by id
+		bool swapped;
+		for (int i = 0; i < Solution.size() - 1; i++)
+		{
+			swapped = false;
+			for (int j = 0; j < Solution.size() - i - 1; j++)
+			{
+				if (Solution[j].wordId > Solution[j + 1].wordId)
+				{
+					Word tmp = Solution[j];
+					Solution[j] = Solution[j + 1];
+					Solution[j + 1] = tmp;
+					swapped = true;
+				}
+			}
+
+			// IF no two elements were swapped by inner loop, then break 
+			if (swapped == false)
+				break;
+		}
+
+		printf("Word ID | Word\n");
+		printf("========================\n");
+		for (auto& word : Solution) {
+			printf("%-4i | %s\n", word.wordId, word.word.c_str());
+		}
+
+		printf("\n\t *Negative IDs are the horizontal (across) counterpart for vertical/horizontal words\n");
 	}
 	else {
 		printf("NO SOLUTION\n\a");
