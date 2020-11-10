@@ -8,6 +8,8 @@
 #include "tinyxml2.h"
 #include <string>
 #include <chrono>
+#include <mutex>
+#include <thread>
 #include <unordered_map>
 
 using namespace std;
@@ -222,6 +224,7 @@ private:
 	CrosswordElementSet* arr;
 	unsigned int _size;
 };
+
 bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordElementSet>& wordSet, CrosswordElementSet& nextWords) {
 	DynamicArray tmpSet(IntersectionMap[newWord.wordId].size());
 
@@ -245,6 +248,8 @@ bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordEleme
 				return false;
 		}
 	}
+
+
 
 	// if all intersections are in crossword
 	if (tmpSet.size() == 0) {
@@ -335,7 +340,7 @@ bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementSe
 
 int main() {
 	// parsing words from XML file
-	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("treeCrossword.xml");
+	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("heartCrossword.xml");
 
 	// populating intersection map
 	ItersectionFinder(crosswordElementReq);
