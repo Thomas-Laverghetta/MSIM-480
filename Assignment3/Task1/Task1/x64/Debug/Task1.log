@@ -1,14 +1,12 @@
-﻿  WordList.cpp
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.h(80,1): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.h(84,1): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(41,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(42,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(45,29): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(45,43): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(45,87): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(45,101): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(46,29): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(46,43): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(46,87): warning C4018: '<=': signed/unsigned mismatch
-D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\WordList.cpp(46,101): warning C4018: '<=': signed/unsigned mismatch
+﻿  main.cpp
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(151,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(152,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(155,21): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(155,35): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(155,66): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(155,80): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(156,21): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(156,35): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(156,66): warning C4018: '<=': signed/unsigned mismatch
+D:\Documents\GitHub\MSIM-480\Assignment3\Task1\Task1\main.cpp(156,80): warning C4018: '<=': signed/unsigned mismatch
   Task1.vcxproj -> D:\Documents\GitHub\MSIM-480\Assignment3\Task1\x64\Debug\Task1.exe

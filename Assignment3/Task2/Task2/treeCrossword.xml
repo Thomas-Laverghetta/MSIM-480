@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <objects>
-  <CrosswordElement wordId="-1" row="1" col="3" VSize="0" HSize="7"></CrosswordElement>
-  <CrosswordElement wordId="1" row="1" col="3" VSize="5" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="2" row="1" col="9" VSize="4" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="3" row="2" col="12" VSize="6" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="4" row="4" col="6" VSize="0" HSize="5"></CrosswordElement>
-  <CrosswordElement wordId="5" row="4" col="8" VSize="6" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="6" row="6" col="5" VSize="6" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="7" row="6" col="8" VSize="0" HSize="5"></CrosswordElement>
-  <CrosswordElement wordId="8" row="6" col="10" VSize="6" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="9" row="8" col="2" VSize="4" HSize="0"></CrosswordElement>
-  <CrosswordElement wordId="10" row="8" col="4" VSize="0" HSize="5"></CrosswordElement>
-  <CrosswordElement wordId="11" row="10" col="1" VSize="0" HSize="6"></CrosswordElement>
+  <CrosswordElement elementId="-1"  row="1"   col="3"   direction="H" size="7"></CrosswordElement>
+  <CrosswordElement elementId="1"   row="1"   col="3"   direction="V" size="5"></CrosswordElement>
+  <CrosswordElement elementId="2"   row="1"   col="9"   direction="V" size="4"></CrosswordElement>
+  <CrosswordElement elementId="3"   row="2"   col="12"  direction="V" size="6"></CrosswordElement>
+  <CrosswordElement elementId="4"   row="4"   col="6"   direction="H" size="5"></CrosswordElement>
+  <CrosswordElement elementId="5"   row="4"   col="8"   direction="V" size="6"></CrosswordElement>
+  <CrosswordElement elementId="6"   row="6"   col="5"   direction="V" size="6"></CrosswordElement>
+  <CrosswordElement elementId="7"   row="6"   col="8"   direction="H" size="5"></CrosswordElement>
+  <CrosswordElement elementId="8"   row="6"   col="10"  direction="V" size="6"></CrosswordElement>
+  <CrosswordElement elementId="9"   row="8"   col="2"   direction="V" size="4"></CrosswordElement>
+  <CrosswordElement elementId="10"  row="8"   col="4"   direction="H" size="5"></CrosswordElement>
+  <CrosswordElement elementId="11"  row="10"  col="1"   direction="H" size="6"></CrosswordElement>
 </objects>

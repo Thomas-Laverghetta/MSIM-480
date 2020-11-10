@@ -44,7 +44,7 @@ struct Intersect {
 unordered_map<int, vector<Intersect>> IntersectionMap;
 
 // set of possible words that can be choosen for specified crossword element
-struct CrosswordElementWordSet {
+struct CrosswordElementSet {
 	int wordId;
 	std::vector<std::string> words;
 };
@@ -80,21 +80,23 @@ vector<CrosswordElementReq> LoadWordRestrictions(const char* filename)
 			/*const char* stateName;
 			pElem->QueryStringAttribute("name", &stateName);*/
 
-			pElem->QueryAttribute("wordId", &temp.wordId);
+			pElem->QueryAttribute("elementId", &temp.wordId);
 			pElem->QueryAttribute("row", &temp.index[0]);
 			pElem->QueryAttribute("col", &temp.index[1]);
 
 
-			int V, H;
-			pElem->QueryAttribute("VSize", &V);
-			pElem->QueryAttribute("HSize", &H);
+			const char * direction;
+			pElem->QueryStringAttribute(std::string("direction").c_str(), &direction);
 
-			if (V > 0) {
-				temp.size = V;
+			int size;
+			pElem->QueryAttribute("size", &size);
+
+			if (strcmp(direction,"V") == 0) {
+				temp.size = size;
 				temp.dir = WordDirection::Down;
 			}
-			else if (H > 0) {
-				temp.size = H;
+			else {
+				temp.size = size;
 				temp.dir = WordDirection::Across;
 			}
 
@@ -180,20 +182,20 @@ void ItersectionFinder(vector<CrosswordElementReq>& wordSet) {
 }
 
 // Data filter based on word restrictions from XML
-vector<CrosswordElementWordSet> DictionaryFilter(vector<CrosswordElementReq>& wordSet) {
+vector<CrosswordElementSet> DictionaryFilter(vector<CrosswordElementReq>& wordSet) {
 	// Getting all words from directory
-	string Directionary[21120];
-	ifstream DirectionaryFile("Directionary.txt");
+	string Dictionary[21120];
+	ifstream DictionaryFile("Dictionary.txt");
 	string tmp; int i = 0;
-	while (DirectionaryFile >> tmp) { Directionary[i] = tmp; i++; }
+	while (DictionaryFile >> tmp) { Dictionary[i] = tmp; i++; }
 
-	vector<CrosswordElementWordSet> wordStates(wordSet.size());
+	vector<CrosswordElementSet> wordStates(wordSet.size());
 
 	for (int i = 0; i < wordStates.size(); i++) {
 		wordStates[i].wordId = wordSet[i].wordId;
 		for (int j = 0; j < 21120; j++) {
-			if (Directionary[j].length() == wordSet[i].size)
-				wordStates[i].words.push_back(Directionary[j]);
+			if (Dictionary[j].length() == wordSet[i].size)
+				wordStates[i].words.push_back(Dictionary[j]);
 		}
 	}
 	return wordStates;
@@ -203,32 +205,32 @@ class DynamicArray {
 public:
 	DynamicArray(int numElements) {
 		_size = 0;
-		arr = new CrosswordElementWordSet[numElements];
+		arr = new CrosswordElementSet[numElements];
 	}
-	void push_back(CrosswordElementWordSet wes) {
+	void push_back(CrosswordElementSet wes) {
 		arr[_size] = wes;
 		_size++;
 	}
 
 	unsigned int size() { return _size; }
 
-	CrosswordElementWordSet& operator[](int index) {
+	CrosswordElementSet& operator[](int index) {
 		return arr[index];
 	}
 	~DynamicArray() { delete[] arr; }
 private:
-	CrosswordElementWordSet* arr;
+	CrosswordElementSet* arr;
 	unsigned int _size;
 };
-bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordElementWordSet>& wordSet, CrosswordElementWordSet& nextWords) {
+bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordElementSet>& wordSet, CrosswordElementSet& nextWords) {
 	DynamicArray tmpSet(IntersectionMap[newWord.wordId].size());
 
 	// finding intersecting word elements then determining if element set contains word that conforms with restrictions
 	for (auto& sect : IntersectionMap[newWord.wordId]) {
 		// determining if intersect exists
-		auto it = find_if(wordSet.begin(), wordSet.end(), [&sect](const CrosswordElementWordSet& obj) { return obj.wordId == sect.wordId; });
+		auto it = find_if(wordSet.begin(), wordSet.end(), [&sect](const CrosswordElementSet& obj) { return obj.wordId == sect.wordId; });
 		if (it != wordSet.end()) {
-			CrosswordElementWordSet newState;
+			CrosswordElementSet newState;
 			newState.wordId = it->wordId;
 			for (auto& word : it->words) {
 				// checking intersection point between new word and this word
@@ -255,7 +257,7 @@ bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordEleme
 			{
 				if (wordSet[j].words.size() > wordSet[j - 1].words.size())
 				{
-					CrosswordElementWordSet tmp = wordSet[j];
+					CrosswordElementSet tmp = wordSet[j];
 					wordSet[j] = wordSet[j - 1];
 					wordSet[j - 1] = tmp;
 					swapped = true;
@@ -283,7 +285,7 @@ bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordEleme
 		{
 			if (tmpSet[j].words.size() > tmpSet[j + 1].words.size())
 			{
-				CrosswordElementWordSet tmp = tmpSet[j];
+				CrosswordElementSet tmp = tmpSet[j];
 				tmpSet[j] = tmpSet[j + 1];
 				tmpSet[j + 1] = tmp;
 				swapped = true;
@@ -297,11 +299,11 @@ bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordEleme
 
 	// set next element and remove same element from set
 	nextWords = tmpSet[0];
-	wordSet.erase(find_if(wordSet.begin(), wordSet.end(), [&tmpSet](const CrosswordElementWordSet& obj) { return obj.wordId == tmpSet[0].wordId; }));
+	wordSet.erase(find_if(wordSet.begin(), wordSet.end(), [&tmpSet](const CrosswordElementSet& obj) { return obj.wordId == tmpSet[0].wordId; }));
 
 	// replacing old words with new words (filtered words)
 	for (int i = 1; i < tmpSet.size(); i++) {
-		auto it = find_if(wordSet.begin(), wordSet.end(), [&tmpSet, &i](const CrosswordElementWordSet& obj) { return obj.wordId == tmpSet[i].wordId; });
+		auto it = find_if(wordSet.begin(), wordSet.end(), [&tmpSet, &i](const CrosswordElementSet& obj) { return obj.wordId == tmpSet[i].wordId; });
 		(*it) = tmpSet[i];
 	}
 
@@ -309,18 +311,20 @@ bool SelectNextElementSet(const CrosswordElement& newWord, vector<CrosswordEleme
 }
 
 vector<CrosswordElement> Solution;
-bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementWordSet> wordSet) {
-	CrosswordElementWordSet nextWords;
+bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementSet> wordSet) {
+	CrosswordElementSet nextWords;
 	if (SelectNextElementSet(currWords.back(), wordSet, nextWords)) {
 		CrosswordElement newWord;
 		newWord.wordId = nextWords.wordId;
+		if (wordSet.size() == 0) {
+			newWord.word = nextWords.words[0];
+			currWords.push_back(newWord);
+			Solution = currWords;
+			return true;
+		}
 		for (auto& word : nextWords.words) {
 			newWord.word = word;
 			currWords.push_back(newWord);
-			if (wordSet.size() == 0) {
-				Solution = currWords;
-				return true;
-			}
 			if (Backtracking(currWords, wordSet))
 				return true;
 			currWords.pop_back();
@@ -337,10 +341,7 @@ int main() {
 	ItersectionFinder(crosswordElementReq);
 
 	// getting words
-	vector<CrosswordElementWordSet> wordSet = DictionaryFilter(crosswordElementReq);
-
-	// starting timer
-	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+	vector<CrosswordElementSet> wordSet = DictionaryFilter(crosswordElementReq);
 
 	// sorting by number of possible solutions (number of words)
 	bool swapped;
@@ -351,7 +352,7 @@ int main() {
 		{
 			if (wordSet[j].words.size() > wordSet[j - 1].words.size())
 			{
-				CrosswordElementWordSet tmp = wordSet[j];
+				CrosswordElementSet tmp = wordSet[j];
 				wordSet[j] = wordSet[j - 1];
 				wordSet[j - 1] = tmp;
 				swapped = true;
@@ -363,13 +364,16 @@ int main() {
 			break;
 	}
 
-	CrosswordElementWordSet startingWords = wordSet.back();
+	CrosswordElementSet startingWords = wordSet.back();
 	wordSet.pop_back();
 
 	vector<CrosswordElement> set;
 	set.reserve(crosswordElementReq.size());
 	CrosswordElement initWord; initWord.wordId = startingWords.wordId;
 	set.push_back(initWord);
+
+	// starting timer
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	for (auto& word : startingWords.words) {
 		set[0].word = word;
 		if (Backtracking(set, wordSet))

@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<objects>
+  <CrosswordElement elementId="1" row="1" col="1" direction="H" size="5"></CrosswordElement>
+  <CrosswordElement elementId="4" row="3" col="2" direction="H" size="4"></CrosswordElement>
+  <CrosswordElement elementId="7" row="4" col="3" direction="H" size="3"></CrosswordElement>
+  <CrosswordElement elementId="8" row="5" col="1" direction="H" size="5"></CrosswordElement>
+  <CrosswordElement elementId="2" row="1" col="3" direction="V" size="5"></CrosswordElement>
+  <CrosswordElement elementId="3" row="1" col="5" direction="V" size="5"></CrosswordElement>
+  <CrosswordElement elementId="5" row="3" col="4" direction="V" size="4"></CrosswordElement>
+  <CrosswordElement elementId="6" row="4" col="1" direction="V" size="3"></CrosswordElement>
+</objects>
