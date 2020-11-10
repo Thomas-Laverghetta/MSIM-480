@@ -335,7 +335,7 @@ bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementSe
 
 int main() {
 	// parsing words from XML file
-	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("heartCrossword.xml");
+	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("treeCrossword.xml");
 
 	// populating intersection map
 	ItersectionFinder(crosswordElementReq);
@@ -403,7 +403,7 @@ int main() {
 				break;
 		}
 
-		printf("CrosswordElement ID | CrosswordElement\n");
+		printf("CrosswordElement ID | Word\n");
 		printf("========================\n");
 		for (auto& word : Solution) {
 			printf("%-4i | %s\n", word.wordId, word.word.c_str());
@@ -417,7 +417,7 @@ int main() {
 	fflush(stdout);
 
 
-	std::cout << "\nTime difference = " << ((double)std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) * 1e-6 << "[s]" << std::endl;
+	std::cout << "\nExecution Time = " << ((double)std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) * 1e-6 << "[s]" << std::endl;
 
 	return 0;
 }
