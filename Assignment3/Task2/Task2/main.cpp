@@ -25,6 +25,9 @@ struct CrosswordElementReq {
 	unsigned int index[2];	// location of word (row, col)
 	int wordId;				// word identifier
 
+	int letterIndex = -1;
+	char letter;
+
 	void operator=(const CrosswordElementReq& copy) {
 		this->dir = copy.dir;
 		this->index[0] = copy.index[0];
@@ -100,6 +103,18 @@ vector<CrosswordElementReq> LoadWordRestrictions(const char* filename)
 			else {
 				temp.size = size;
 				temp.dir = WordDirection::Across;
+			}
+
+			int letterIndex;
+			pElem->QueryAttribute("letterIndex", &letterIndex);
+
+			if (letterIndex > -1) {
+				temp.letterIndex = letterIndex;
+
+				const char* letter;
+				pElem->QueryStringAttribute(std::string("letter").c_str(), &letter);
+
+				temp.letter = letter[0];
 			}
 
 			wordSet.push_back(temp);
@@ -195,9 +210,20 @@ vector<CrosswordElementSet> DictionaryFilter(vector<CrosswordElementReq>& wordSe
 
 	for (int i = 0; i < wordStates.size(); i++) {
 		wordStates[i].wordId = wordSet[i].wordId;
-		for (uint16_t j = 0; j < 21120; j++) {
-			if (Dictionary[j].length() == wordSet[i].size)
-				wordStates[i].words.push_back(j);
+		if (wordSet[i].letterIndex == -1) {
+			for (uint16_t j = 0; j < 21120; j++) {
+				if (Dictionary[j].length() == wordSet[i].size)
+					wordStates[i].words.push_back(j);
+			}
+		}
+		else {
+			for (uint16_t j = 0; j < 21120; j++) {
+				if (Dictionary[j].length() == wordSet[i].size) {
+					char letter = Dictionary[j][wordSet[i].letterIndex - 1];
+					if (letter == wordSet[i].letter || letter == (wordSet[i].letter + 32))
+						wordStates[i].words.push_back(j);
+				}
+			}
 		}
 	}
 	return wordStates;
@@ -340,7 +366,7 @@ bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementSe
 
 int main() {
 	// parsing words from XML file
-	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("treeCrossword.xml");
+	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("heartCrossword.xml");
 
 	// populating intersection map
 	ItersectionFinder(crosswordElementReq);
