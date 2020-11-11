@@ -46,12 +46,12 @@ unordered_map<int, vector<Intersect>> IntersectionMap;
 // set of possible words that can be choosen for specified crossword element
 struct CrosswordElementSet {
 	int wordId;
-	std::vector<std::string> words;
+	std::vector<uint16_t> words;
 };
 
 // Crossword Element (word and element id)
 struct CrosswordElement {
-	std::string word;
+	uint16_t word;
 	int wordId;
 };
 
@@ -181,10 +181,10 @@ void ItersectionFinder(vector<CrosswordElementReq>& wordSet) {
 	}
 }
 
+string Dictionary[21120];
 // Data filter based on word restrictions from XML
 vector<CrosswordElementSet> DictionaryFilter(vector<CrosswordElementReq>& wordSet) {
 	// Getting all words from directory
-	string Dictionary[21120];
 	ifstream DictionaryFile("Dictionary.txt");
 	string tmp; int i = 0;
 	while (DictionaryFile >> tmp) { Dictionary[i] = tmp; i++; }
@@ -193,9 +193,9 @@ vector<CrosswordElementSet> DictionaryFilter(vector<CrosswordElementReq>& wordSe
 
 	for (int i = 0; i < wordStates.size(); i++) {
 		wordStates[i].wordId = wordSet[i].wordId;
-		for (int j = 0; j < 21120; j++) {
+		for (uint16_t j = 0; j < 21120; j++) {
 			if (Dictionary[j].length() == wordSet[i].size)
-				wordStates[i].words.push_back(Dictionary[j]);
+				wordStates[i].words.push_back(j);
 		}
 	}
 	return wordStates;
@@ -212,7 +212,7 @@ bool SelectNextElementSet(const vector<CrosswordElement>& currElements, vector<C
 				CrosswordElementSet tmp;
 				for (auto& word : newState.words) {
 					// checking intersection point between new word and this word
-					if (word[sect.wordIndex] == newWord.word[sect.originWordIndex])
+					if (Dictionary[word][sect.wordIndex] == Dictionary[newWord.word][sect.originWordIndex])
 						tmp.words.push_back(word);
 				}
 				// determining if anywords conformed to restrictions
@@ -307,7 +307,7 @@ int main() {
 		printf("CrosswordElement ID | Word\n");
 		printf("========================\n");
 		for (auto& word : Solution) {
-			printf("%-4i | %s\n", word.wordId, word.word.c_str());
+			printf("%-4i | %s\n", word.wordId, Dictionary[word.word].c_str());
 		}
 
 		printf("\n\t *Negative IDs are the horizontal (across) counterpart for vertical/horizontal words\n");

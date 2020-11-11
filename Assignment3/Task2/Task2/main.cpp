@@ -193,9 +193,9 @@ vector<CrosswordElementSet> DictionaryFilter(vector<CrosswordElementReq>& wordSe
 
 	vector<CrosswordElementSet> wordStates(wordSet.size());
 
-	for (uint16_t i = 0; i < wordStates.size(); i++) {
+	for (int i = 0; i < wordStates.size(); i++) {
 		wordStates[i].wordId = wordSet[i].wordId;
-		for (int j = 0; j < 21120; j++) {
+		for (uint16_t j = 0; j < 21120; j++) {
 			if (Dictionary[j].length() == wordSet[i].size)
 				wordStates[i].words.push_back(j);
 		}
@@ -340,7 +340,7 @@ bool Backtracking(vector<CrosswordElement>& currWords, vector<CrosswordElementSe
 
 int main() {
 	// parsing words from XML file
-	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("heartCrossword.xml");
+	vector<CrosswordElementReq> crosswordElementReq = LoadWordRestrictions("treeCrossword.xml");
 
 	// populating intersection map
 	ItersectionFinder(crosswordElementReq);
