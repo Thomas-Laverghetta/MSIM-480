@@ -11,4 +11,6 @@ Task 1 & 2 use XML files to provide crossword puzzle input. The XML are formatte
 ```
 For examples, users can see task 2's tree or heart crossword XML based on system requirement crossword puzzles. Also, for crossword elements with horizontal and vertical components, users will create two crossword elements one with positive element Id and another with negative element Id where positive will have horizontal or vertical and negative will have the other. 
 
+To input XML to run, goto main function and changed parameter of LoadWordRestrictions to name of XML file.
+
 Task 1 has a user defined dictionary which can be modified by modifying dictionary.txt file in Task 1 folder. 
