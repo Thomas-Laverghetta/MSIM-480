@@ -1,0 +1,25 @@
+If assuming matrix for each node where the matrix contains Ws, Bs, and 0s for white- and black-stones and blank spaces, respectively.
+e.g., 
+0000
+0W00
+0000
+
+Selection(curr state (CS), last stone pos (LSP), player (W or B)) 
+	selection node set (nodeSet) <-set of possible moves
+	
+	// check for empty spaces around LSP
+	if CS[LSP.row, LSP.col - 1] == 0: 
+		append copy of CS with CS[LSP.row, LSP.col - 1] = player
+
+	do same for the rest for:
+		r + 1, c
+		r - 1, c
+		r    , c + 1
+		r    , c - 1
+		r + 1, c + 1
+		r - 1, c + 1
+		r + 1, c - 1
+		r - 1, c - 1
+
+	
+	return nodeSet

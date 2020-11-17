@@ -1,0 +1,31 @@
+NEXT_MOVE = null <-pointer to best move
+Minimax(node, depth, isMaxPlayer, alpha, beta):
+	if depth == max depth OR node is leaf:
+		return value of node
+	
+	if isMaxPlayer == MAX:
+		bestVal = -INF
+		foreach child node:
+			value = minimax(child, depth + 1, MIN, alpha, beta)
+			bestVal = max(bestVal, value)
+			alpha = max (alpha, bestVal)
+			if beta <= alpha:
+				NEXT_MOVE = child
+				break
+			END if
+		END for
+		return bestVal
+	else: <-isMaxPlayer == MIN
+		bestVal = +INF
+		foreach child node:
+			value = minimax(child, depth + 1, MAX, alpha, beta)
+			bestVal = min(bestVal, value)
+			beta = min (beta, bestVal)
+			if beta <= alpha:
+				NEXT_MOVE = child
+				break
+			END if
+		END for
+		return bestVal
+	END if
+END
