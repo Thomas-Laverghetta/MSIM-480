@@ -6,7 +6,6 @@
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
 typedef int score;
-
 using namespace std;
 
 // node represents game board
@@ -387,7 +386,7 @@ score NodeScore(const Node& node) {
     return NumLives(node, true);
 }
 
-int MAX_DEPTH = 10; Node* next_move = nullptr;
+int MAX_DEPTH = 10; Node next_move;
 // minimax search algorithm
 score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
     if (depth == MAX_DEPTH || IsLeaf(node))
@@ -401,7 +400,11 @@ score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
             bestVal = Max(bestVal, value);
             alpha = Max(alpha, bestVal);
             if (beta <= alpha) {
-                next_move = &child;
+                for (uint8_t r = 0; r < MAX_ROW; r++) {
+                    for (uint8_t c = 0; c < MAX_COL; c++) {
+                        next_move.currBoard[r][c] = child.currBoard[r][c];
+                    }
+                }
                 break;
             }
         }
@@ -440,6 +443,18 @@ void PrintBoard(const Node& node) {
         cout << endl;
     }
     cout << " " << string(2 + 4 * MAX_COL, '-') << endl;
+}
+
+void Diff(const Node& OG, const Node& newG, uint8_t* lastPlay) {
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            if (OG.currBoard[r][c] != newG.currBoard[r][c]) {
+                lastPlay[0] = r;
+                lastPlay[1] = c;
+                return;
+            }
+        }
+    }
 }
 
 // user input checking
@@ -499,7 +514,11 @@ int main() {
         }
         else {
             Minimax(node, 0, true, MIN_SCORE, MAX_SCORE);
-
+            uint8_t index[2];
+            Diff(node, next_move, index);
+            node.currBoard[index[0]][index[1]] = next_move.currBoard[index[0]][index[1]];
+            node.lastPlay[0] = index[0];
+            node.lastPlay[1] = index[1];
         }
 
         over = IsLeaf(node);
