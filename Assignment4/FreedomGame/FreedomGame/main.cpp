@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 #include "AudioPlayer.h"
-#define MAX_ROW 4
-#define MAX_COL 4
+#define MAX_ROW 8
+#define MAX_COL 8
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
 typedef int score;
@@ -526,7 +526,20 @@ void PrintBoard(const Node& node) {
         cout << " " << string(2 + 4* MAX_COL, '-') << endl;
         printf("%c|", letter++);
         for (uint8_t c = 0; c < MAX_COL; c++) {
-            printf(" %c |", node.currBoard[r][c]);
+            if (node.currBoard[r][c] == 'B') {
+                printf("\033[1;31m");
+                printf(" %c ", node.currBoard[r][c]);
+                printf("\033[0m");
+            }
+            else if (node.currBoard[r][c] == 'W') {
+                printf("\033[1;32m");
+                printf(" %c ", node.currBoard[r][c]);
+                printf("\033[0m");
+            }
+            else {
+                printf(" %c ", node.currBoard[r][c]);
+            }
+            printf("|");
         }
         cout << endl;
     }
@@ -576,7 +589,7 @@ int main() {
         if (turn) {
             char letter; int col; int8_t row;
             do {
-                printf("Please make a move (RowCol Ex: A3): ");
+                printf("Please make a move w/white stone (RowCol Ex: A3): ");
                 cin >> letter >> col;
                 col--;
                 row = LetterToRow(letter);
@@ -607,6 +620,26 @@ int main() {
         over = IsLeaf(node);
         turn = !turn;
         PrintBoard(node);
+    }
+    uint8_t person = NumLives(node, false);
+    uint8_t AI = NumLives(node, true);
+    if (person > AI) {
+        Clear(); // clearing the last song
+        Victory(); // Play victory song for user
+        cout << "\tPerson Won! GG! \n\n";
+    }
+    else if (AI > person) {
+        Clear(); // clearing the last song
+        CompWin(); // Play computer win song
+        cout << "\tComputer Won! GG!\n\n";
+    }
+    else {
+        // Stop the current song
+        Clear();
+
+        // start playing Cat song
+        CatVictory();
+        cout << "\tThe CAT Won! DRAW GG!\n\n";
     }
     return 0;
 }
