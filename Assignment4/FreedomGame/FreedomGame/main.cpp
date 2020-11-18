@@ -6,7 +6,7 @@
 #define MAX_COL 8
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
-typedef int score;
+typedef unsigned int score;
 using namespace std;
 
 // node represents game board
@@ -136,316 +136,147 @@ bool IsLeaf(const Node& node) {
 }
 
 // Checks number of lives for given player
-uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
-    char playChar = (player ? 'B' : 'W');
-    vector<uint8_t**> lives;
+uint8_t NumLives(const Node& node, char playChar) { // player = true == AI == 'B'
+    uint8_t numLives = 0;
     for (uint8_t r = 0; r < MAX_ROW; r++) {
         for (uint8_t c = 0; c < MAX_COL; c++) {
             if (node.currBoard[r][c] == playChar) {
                 // checking North
                 if (r + 3 < MAX_ROW) {
-                    if (node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == playChar)
+                    if (node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == playChar &&
+                        (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true))
                     {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] != 0 || l[0][1] != c)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][0] == r + 1 || l[i][0] == r + 2 || l[i][0] == r + 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t ** live;
-                            live = new uint8_t*[4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r + i;
-                                live[i][1] = c;
-                            }
-                            lives.push_back(live);
-                        }
+                        numLives++;
                     }
                 }
 
                 // checking North-East
                 if (c + 3 < MAX_COL && r + 3 < MAX_ROW) {
-                    if (node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == playChar)
+                    if (node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == playChar
+                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
                     {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r + 1 || l[i][1] == c + 1 ||
-                                    l[i][0] == r + 2 || l[i][1] == c + 2 || l[i][0] == r + 3 || l[i][1] == c + 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r + i;
-                                live[i][1] = c + i;
-                            }
-                            lives.push_back(live);
-                        }
+                        numLives++;
                     }
                 }
 
                 // checking East
                 if (c + 3 < MAX_COL) {
-                    if (node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 1] == playChar)
+                    if (node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 2] == playChar &&
+                        (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
                     {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or r then no lives which make this one. 
-                            if (l[0][0] - l[1][0] != 0 || l[0][0] != r)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][1] == c || l[i][1] == c + 1 || l[i][1] == c + 2 || l[i][1] == c + 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r;
-                                live[i][1] = c + i;
-                            }
-                            lives.push_back(live);
-                        }
+                        numLives++;
+
                     }
                 }
 
                 // checking Sourth-East
                 if (c + 3 < MAX_COL && r - 3 >= 0) {
-                    if (node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == playChar)
+                    if (node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == playChar
+                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
                     {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != -1)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r - 1 || l[i][1] == c + 1 ||
-                                    l[i][0] == r - 2 || l[i][1] == c + 2 || l[i][0] == r - 3 || l[i][1] == c + 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r - i;
-                                live[i][1] = c + i;
-                            }
-                            lives.push_back(live);
-                        }
-                    }
-                }
-
-                // checking South
-                if (r - 3 >= 0) {
-                    if (node.currBoard[r - 3][c] == 'B' && node.currBoard[r - 1][c] == 'B' && node.currBoard[r - 2][c] == 'B')
-                    {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] != 0 || l[0][1] != c)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][0] == r - 1 || l[i][0] == r - 2 || l[i][0] == r - 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r - i;
-                                live[i][1] = c;
-                            }
-                            lives.push_back(live);
-                        }
-                    }
-                }
-
-                // checking South-West
-                if (r - 3 >= 0 && c - 3 >= 0) {
-                    if (node.currBoard[r - 3][c - 3] == playChar && node.currBoard[r - 1][c - 1] == playChar && node.currBoard[r - 2][c - 2] == playChar)
-                    {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r - 1 || l[i][1] == c - 1 ||
-                                    l[i][0] == r - 2 || l[i][1] == c - 2 || l[i][0] == r - 3 || l[i][1] == c - 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r - i;
-                                live[i][1] = c - i;
-                            }
-                            lives.push_back(live);
-                        }
-                    }
-                }
-
-                // checking west
-                if (c - 3 >= 0) {
-                    if (node.currBoard[r][c - 3] == playChar && node.currBoard[r][c - 1] == playChar && node.currBoard[r][c - 1] == playChar)
-                    {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or r then no lives which make this one. 
-                            if (l[0][0] - l[1][0] != 0 || l[0][0] != r)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][1] == c || l[i][1] == c - 1 || l[i][1] == c - 2 || l[i][1] == c - 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r;
-                                live[i][1] = c - i;
-                            }
-                            lives.push_back(live);
-                        }
-                    }
-                }
-
-                // checking west-north
-                if (r + 3 < MAX_ROW && c - 3 >= 0) {
-                    if (node.currBoard[r + 3][c - 3] == playChar && node.currBoard[r + 1][c - 1] == playChar && node.currBoard[r + 2][c - 2] == playChar)
-                    {
-                        bool conflict = false;
-                        for (auto& l : lives) {
-                            // if its slope does not match or col then no lives which make this one. 
-                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
-                                continue;
-                            for (uint8_t i = 0; i < 4; i++) {
-                                // if point matches, then automatically north r,c is not a live
-                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r + 1 || l[i][1] == c - 1 ||
-                                    l[i][0] == r + 2 || l[i][1] == c - 2 || l[i][0] == r + 3 || l[i][1] == c - 3) {
-                                    conflict = true;
-                                    break;
-                                }
-                            }
-                            if (conflict)
-                                break;
-                        }
-                        if (!conflict)
-                        {
-                            uint8_t** live;
-                            live = new uint8_t * [4];
-                            for (int i = 0; i < 4; i++) {
-                                live[i] = new uint8_t[2];
-                            }
-                            for (uint8_t i = 0; i < 4; i++) {
-                                live[i][0] = r + i;
-                                live[i][1] = c - i;
-                            }
-                            lives.push_back(live);
-                        }
-
+                        numLives++;
                     }
                 }
             }
         }
     }
 
-    uint8_t num = lives.size();
-
-    // deleting mem
-    for (auto& i : lives) {
-        for (int j = 0; j < 4; j++) {
-            delete[] i[j];
-        }
-        delete[] i;
-    }
-
-    return num;
+    return numLives;
 }
 
 // returns the node's score
 score NodeScore(const Node& node) {
-    return NumLives(node, true);
+    char playChar = 'B';
+
+    // counting number of lives
+    uint8_t numLives = 0;
+    uint8_t numSingles = 0;
+    uint8_t numDoubles = 0;
+    uint8_t numTriples = 0;
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            if (node.currBoard[r][c] == playChar) {
+                // checking North
+                if (r + 3 < MAX_ROW) {
+                    if (node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == playChar &&
+                        (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
+                    {
+                        numLives++;
+                    }
+                    else if (node.currBoard[r + 3][c] == '\0' && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0' &&
+                        (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
+                    {
+                        numSingles++;
+                    }
+                    else if (((node.currBoard[r + 3][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 2][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 2][c] == '\0'))
+                        || (node.currBoard[r + 2][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 3][c] == '\0'))
+                        || (node.currBoard[r + 1][c] == playChar && (node.currBoard[r + 2][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 2][c] == '\0' || node.currBoard[r + 3][c] == '\0')))
+                        && (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true))
+                    {
+                        numTriples++;
+                    }
+                    else if (((node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0')
+                        || (node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == '\0' && node.currBoard[r + 3][c] == '\0')
+                        || (node.currBoard[r + 2][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 3][c] == '\0')) 
+                        && (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
+                    {
+                        numDoubles++;
+                    }
+                }
+
+                // checking North-East
+                if (c + 3 < MAX_COL && r + 3 < MAX_ROW) {
+                    if (node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == playChar
+                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
+                    {
+                        numLives++;
+                    }
+
+                }
+
+                // checking East
+                if (c + 3 < MAX_COL) {
+                    if (node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 2] == playChar &&
+                        (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
+                    {
+                        numLives++;
+
+                    }
+                    else if (node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 2] == '\0' && node.currBoard[r][c + 1] == '\0' &&
+                        (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
+                    {
+                        numSingles++;
+                    }
+                    else if (((node.currBoard[r][c + 3] == playChar && (node.currBoard[r][c + 2] == playChar || node.currBoard[r][c + 1] == playChar) && (node.currBoard[r][c + 2] == '\0' || node.currBoard[r][c + 1] == '\0'))
+                        || (node.currBoard[r][c + 2] == playChar && (node.currBoard[r][c + 3] == playChar || node.currBoard[r][c + 1] == playChar) && (node.currBoard[r][c + 3] == '\0' || node.currBoard[r][c + 1] == '\0'))
+                        || (node.currBoard[r][c + 1] == playChar && (node.currBoard[r][c + 3] == playChar || node.currBoard[r][c + 2] == playChar) && (node.currBoard[r][c + 3] == '\0' || node.currBoard[r][c + 2] == '\0')))
+                        && (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
+                    {
+                        numTriples++;
+                    }
+                    else if (((node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 2] == '\0' && node.currBoard[r][c + 1] == '\0')
+                        || (node.currBoard[r][c + 2] == playChar && node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 1] == '\0')
+                        || (node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 2] == '\0'))
+                        && (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
+                    {
+                        numDoubles++;
+                    }
+                }
+
+                // checking Sourth-East
+                if (c + 3 < MAX_COL && r - 3 >= 0) {
+                    if (node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == playChar
+                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
+                    {
+                        numLives++;
+                    }
+                }
+            }
+        }
+    }
+
+    // for each peice combined I add one
+    return numSingles + numDoubles*2 + numTriples*3 + numLives*4;
 }
 
 unsigned int MAX_DEPTH = 4; Node next_move;
@@ -621,8 +452,8 @@ int main() {
         turn = !turn;
         PrintBoard(node);
     }
-    uint8_t person = NumLives(node, false);
-    uint8_t AI = NumLives(node, true);
+    uint8_t person = NumLives(node, 'W');
+    uint8_t AI = NumLives(node, 'B');
     if (person > AI) {
         Clear(); // clearing the last song
         Victory(); // Play victory song for user
