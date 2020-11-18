@@ -13,6 +13,8 @@ struct Node {
     uint8_t lastPlay[2];    // last play to create current board. row, col
     char currBoard[MAX_ROW][MAX_COL];
     Node() {
+        lastPlay[0] = -1;
+        lastPlay[1] = -1;
         for (uint8_t r = 0; r < MAX_ROW; r++) {
             for (uint8_t c = 0; c < MAX_COL; c++) {
                 currBoard[r][c] = '\0';
@@ -119,7 +121,7 @@ bool IsLeaf(const Node& node) {
 // Checks number of lives for given player
 uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
     char playChar = (player ? 'B' : 'W');
-    vector<uint8_t[4][2]> lives;
+    vector<uint8_t**> lives;
     for (uint8_t r = 0; r < MAX_ROW; r++) {
         for (uint8_t c = 0; c < MAX_COL; c++) {
             if (node.currBoard[r][c] == playChar) {
@@ -144,7 +146,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t ** live;
+                            live = new uint8_t*[4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r + i;
                                 live[i][1] = c;
@@ -176,7 +182,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r + i;
                                 live[i][1] = c + i;
@@ -207,7 +217,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r;
                                 live[i][1] = c + i;
@@ -239,7 +253,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r - i;
                                 live[i][1] = c + i;
@@ -270,7 +288,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r - i;
                                 live[i][1] = c;
@@ -302,7 +324,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r - i;
                                 live[i][1] = c - i;
@@ -333,7 +359,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r;
                                 live[i][1] = c - i;
@@ -365,7 +395,11 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         }
                         if (!conflict)
                         {
-                            uint8_t live[4][2];
+                            uint8_t** live;
+                            live = new uint8_t * [4];
+                            for (int i = 0; i < 4; i++) {
+                                live[i] = new uint8_t[2];
+                            }
                             for (uint8_t i = 0; i < 4; i++) {
                                 live[i][0] = r + i;
                                 live[i][1] = c - i;
@@ -378,7 +412,16 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
             }
         }
     }
-    return lives.size();
+
+    int num = lives.size();
+
+    for (auto& i : lives) {
+        for (int j = 0; j < 4; j++) {
+            delete[] i[j];
+        }
+    }
+
+    return num;
 }
 
 // returns the node's score
@@ -526,7 +569,6 @@ int main() {
         }
 
         over = IsLeaf(node);
-
         turn = !turn;
         PrintBoard(node);
     }
