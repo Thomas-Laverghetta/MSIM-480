@@ -416,7 +416,11 @@ score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
             bestVal = Min(bestVal, value);
             alpha = Min(beta, bestVal);
             if (beta <= alpha) {
-                next_move = &child;
+                for (uint8_t r = 0; r < MAX_ROW; r++) {
+                    for (uint8_t c = 0; c < MAX_COL; c++) {
+                        next_move.currBoard[r][c] = child.currBoard[r][c];
+                    }
+                }
                 break;
             }
         }
