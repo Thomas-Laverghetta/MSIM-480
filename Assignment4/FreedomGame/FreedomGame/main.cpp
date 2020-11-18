@@ -1,8 +1,9 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#define MAX_ROW 8
-#define MAX_COL 8
+#include "AudioPlayer.h"
+#define MAX_ROW 4
+#define MAX_COL 4
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
 typedef int score;
@@ -104,10 +105,26 @@ vector<Node> PossibleMoves(const Node& node, bool player) {
 
         nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
     }
+
+    // if there is no empty spots adjacent to last play, then all empty spots are available
+    if (nodeSet.size() == 0) {
+        for (uint8_t r = 0; r < MAX_ROW; r++) {
+            for (uint8_t c = 0; c < MAX_COL; c++) {
+                // if empty spot, add to set of possible moves
+                if (node.currBoard[r][c] == '\0') {
+                    nodeSet.push_back(node);
+                    nodeSet.back().lastPlay[0] = r;
+                    nodeSet.back().lastPlay[1] = c;
+
+                    nodeSet.back().currBoard[r][c] = 'B' * player + 'W' * !player; // AI is black, person is white
+                }
+            }
+        }
+    }
     return nodeSet;
 }
 
-// returns whether this is a leaf node
+// returns whether this is a leaf node - no empty spots available
 bool IsLeaf(const Node& node) {
     for (uint8_t r = 0; r < MAX_ROW; r++) {
         for (uint8_t c = 0; c < MAX_COL; c++) {
@@ -167,7 +184,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or col then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -203,7 +220,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or r then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 0 || l[0][0] != r)
+                            if (l[0][0] - l[1][0] != 0 || l[0][0] != r)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -238,7 +255,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or col then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != -1)
+                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != -1)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -309,7 +326,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or col then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -345,7 +362,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or r then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 0 || l[0][0] != r)
+                            if (l[0][0] - l[1][0] != 0 || l[0][0] != r)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -380,7 +397,7 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
                         bool conflict = false;
                         for (auto& l : lives) {
                             // if its slope does not match or col then no lives which make this one. 
-                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                            if (l[0][0] - l[1][0] == 0 || (l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
                                 continue;
                             for (uint8_t i = 0; i < 4; i++) {
                                 // if point matches, then automatically north r,c is not a live
@@ -413,12 +430,14 @@ uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
         }
     }
 
-    int num = lives.size();
+    uint8_t num = lives.size();
 
+    // deleting mem
     for (auto& i : lives) {
         for (int j = 0; j < 4; j++) {
             delete[] i[j];
         }
+        delete[] i;
     }
 
     return num;
@@ -429,9 +448,9 @@ score NodeScore(const Node& node) {
     return NumLives(node, true);
 }
 
-int MAX_DEPTH = 10; Node next_move;
+unsigned int MAX_DEPTH = 4; Node next_move;
 // minimax search algorithm
-score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
+score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta) {
     if (depth == MAX_DEPTH || IsLeaf(node))
         return NodeScore(node);
 
@@ -440,14 +459,24 @@ score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
         bestVal = MIN_SCORE;
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, false, alpha, beta);
-            bestVal = Max(bestVal, value);
+            if (depth == 0) {
+                int preBest = bestVal;
+                bestVal = Max(bestVal, value);
+                if (bestVal > preBest) {
+                    for (uint8_t r = 0; r < MAX_ROW; r++) {
+                        for (uint8_t c = 0; c < MAX_COL; c++) {
+                            next_move.currBoard[r][c] = child.currBoard[r][c];
+                        }
+                    }
+                    next_move.lastPlay[0] = child.lastPlay[0];
+                    next_move.lastPlay[1] = child.lastPlay[1];
+                }
+            }
+            else {
+                bestVal = Max(bestVal, value);
+            }
             alpha = Max(alpha, bestVal);
             if (beta <= alpha) {
-                for (uint8_t r = 0; r < MAX_ROW; r++) {
-                    for (uint8_t c = 0; c < MAX_COL; c++) {
-                        next_move.currBoard[r][c] = child.currBoard[r][c];
-                    }
-                }
                 break;
             }
         }
@@ -456,14 +485,25 @@ score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
         bestVal = MAX_SCORE;
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, true, alpha, beta);
-            bestVal = Min(bestVal, value);
+            if (depth == 0) {
+                int preBest = bestVal;
+                bestVal = Min(bestVal, value);
+                if (bestVal < preBest)
+                {
+                    for (uint8_t r = 0; r < MAX_ROW; r++) {
+                        for (uint8_t c = 0; c < MAX_COL; c++) {
+                            next_move.currBoard[r][c] = child.currBoard[r][c];
+                        }
+                    }
+                    next_move.lastPlay[0] = child.lastPlay[0];
+                    next_move.lastPlay[1] = child.lastPlay[1];
+                }
+            }
+            else {
+                bestVal = Min(bestVal, value);
+            }
             alpha = Min(beta, bestVal);
             if (beta <= alpha) {
-                for (uint8_t r = 0; r < MAX_ROW; r++) {
-                    for (uint8_t c = 0; c < MAX_COL; c++) {
-                        next_move.currBoard[r][c] = child.currBoard[r][c];
-                    }
-                }
                 break;
             }
         }
@@ -472,6 +512,7 @@ score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
 }
 
 // diplays game board
+// http://web.theurbanpenguin.com/adding-color-to-your-output-from-c/
 void PrintBoard(const Node& node) {
 
     printf("\n");
@@ -492,20 +533,8 @@ void PrintBoard(const Node& node) {
     cout << " " << string(2 + 4 * MAX_COL, '-') << endl;
 }
 
-void Diff(const Node& OG, const Node& newG, uint8_t* lastPlay) {
-    for (uint8_t r = 0; r < MAX_ROW; r++) {
-        for (uint8_t c = 0; c < MAX_COL; c++) {
-            if (OG.currBoard[r][c] != newG.currBoard[r][c]) {
-                lastPlay[0] = r;
-                lastPlay[1] = c;
-                return;
-            }
-        }
-    }
-}
-
 // user input checking
-uint8_t LetterToRow(const char& letter) {
+int8_t LetterToRow(const char& letter) {
     if (letter <= 'z' && letter >= 'a') {
         return letter - 97;
     }
@@ -522,7 +551,7 @@ uint8_t LetterToRow(const char& letter) {
         return -1;
     }
 }
-bool ValidMove(const Node& node, const uint8_t& r, const uint8_t& c) {
+bool ValidMove(const Node& node, const int8_t& r, const int8_t& c) {
     return node.currBoard[r][c] == '\0';
 }
 
@@ -530,6 +559,12 @@ int main() {
     // Changing the color of the exe window
     cout << "\tPLEASE HAVE AUDIO ON!!! There is Music Playing in the background. \n\n";
     cout << "\n\nWelcome to Freedom!\n";
+
+    // Clearing any music that might be playing in the back ground
+    Clear();
+
+    // Starting the back gound music
+    BattleMusic();
 
     // declare node and print board
     Node node;
@@ -539,16 +574,17 @@ int main() {
     bool over = false;
     while (!over) {
         if (turn) {
-            char letter; int col; uint8_t row;
+            char letter; int col; int8_t row;
             do {
                 printf("Please make a move (RowCol Ex: A3): ");
                 cin >> letter >> col;
                 col--;
                 row = LetterToRow(letter);
                 if (row != -1) {
-                    if (!ValidMove) {
+                    if (!ValidMove(node, row, col)) {
                         printf("ERROR: Please re-enter\n\a");
                         row = -1;
+
                         // Clearing and ignoring the last cin
                         cin.clear();
                         cin.ignore();
@@ -561,11 +597,11 @@ int main() {
         }
         else {
             Minimax(node, 0, true, MIN_SCORE, MAX_SCORE);
-            uint8_t index[2];
-            Diff(node, next_move, index);
-            node.currBoard[index[0]][index[1]] = next_move.currBoard[index[0]][index[1]];
-            node.lastPlay[0] = index[0];
-            node.lastPlay[1] = index[1];
+
+            // setting AI's move
+            node.currBoard[next_move.lastPlay[0]][next_move.lastPlay[1]] = next_move.currBoard[next_move.lastPlay[0]][next_move.lastPlay[1]];
+            node.lastPlay[0] = next_move.lastPlay[0];
+            node.lastPlay[1] = next_move.lastPlay[1];
         }
 
         over = IsLeaf(node);
