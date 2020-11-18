@@ -203,11 +203,13 @@ score NodeScore(const Node& node) {
                     {
                         numLives++;
                     }
+                    // if a stone has a path to get live (i.e., empty spaces)
                     else if (node.currBoard[r + 3][c] == '\0' && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0' &&
                         (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
                     {
                         numSingles++;
                     }
+                    // if three stones have a path to get a live 
                     else if (((node.currBoard[r + 3][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 2][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 2][c] == '\0'))
                         || (node.currBoard[r + 2][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 3][c] == '\0'))
                         || (node.currBoard[r + 1][c] == playChar && (node.currBoard[r + 2][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 2][c] == '\0' || node.currBoard[r + 3][c] == '\0')))
@@ -215,6 +217,7 @@ score NodeScore(const Node& node) {
                     {
                         numTriples++;
                     }
+                    // if two stones have path to get a live
                     else if (((node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0')
                         || (node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == '\0' && node.currBoard[r + 3][c] == '\0')
                         || (node.currBoard[r + 2][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 3][c] == '\0')) 
@@ -231,7 +234,28 @@ score NodeScore(const Node& node) {
                     {
                         numLives++;
                     }
-
+                    // if three stones have a path to get a live 
+                    else if (node.currBoard[r + 3][c + 3] == '\0' && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 2][c + 2] == '\0' &&
+                        (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
+                    {
+                        numSingles++;
+                    }
+                    // if three stones have a path to get a live 
+                    else if (((node.currBoard[r + 3][c + 3] == playChar && (node.currBoard[r + 1][c + 1] == playChar || node.currBoard[r + 2][c + 2] == playChar) && (node.currBoard[r + 1][c + 1] == '\0' || node.currBoard[r + 2][c + 2] == '\0'))
+                        || (node.currBoard[r + 2][c + 2] == playChar && (node.currBoard[r + 1][c + 1] == playChar || node.currBoard[r + 3][c + 3] == playChar) && (node.currBoard[r + 1][c + 1] == '\0' || node.currBoard[r + 3][c + 3] == '\0'))
+                        || (node.currBoard[r + 1][c + 1] == playChar && (node.currBoard[r + 2][c + 2] == playChar || node.currBoard[r + 3][c + 3] == playChar) && (node.currBoard[r + 2][c + 2] == '\0' || node.currBoard[r + 3][c + 3] == '\0')))
+                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
+                    {
+                        numTriples++;
+                    }
+                    // if two stones have path to get a live
+                    else if (((node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 2][c + 2] == '\0')
+                        || (node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == '\0' && node.currBoard[r + 3][c + 3] == '\0')
+                        || (node.currBoard[r + 2][c + 2] == playChar && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 3][c + 3] == '\0'))
+                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
+                    {
+                        numDoubles++;
+                    }
                 }
 
                 // checking East
@@ -269,6 +293,28 @@ score NodeScore(const Node& node) {
                         && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
                     {
                         numLives++;
+                    }
+                    // if three stones have a path to get a live 
+                    else if (node.currBoard[r - 3][c + 3] == '\0' && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 2][c + 2] == '\0' &&
+                        (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
+                    {
+                        numSingles++;
+                    }
+                    // if three stones have a path to get a live 
+                    else if (((node.currBoard[r - 3][c + 3] == playChar && (node.currBoard[r - 1][c + 1] == playChar || node.currBoard[r - 2][c + 2] == playChar) && (node.currBoard[r - 1][c + 1] == '\0' || node.currBoard[r - 2][c + 2] == '\0'))
+                        || (node.currBoard[r - 2][c + 2] == playChar && (node.currBoard[r - 1][c + 1] == playChar || node.currBoard[r - 3][c + 3] == playChar) && (node.currBoard[r - 1][c + 1] == '\0' || node.currBoard[r - 3][c + 3] == '\0'))
+                        || (node.currBoard[r - 1][c + 1] == playChar && (node.currBoard[r - 2][c + 2] == playChar || node.currBoard[r - 3][c + 3] == playChar) && (node.currBoard[r - 2][c + 2] == '\0' || node.currBoard[r - 3][c + 3] == '\0')))
+                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
+                    {
+                        numTriples++;
+                    }
+                    // if two stones have path to get a live
+                    else if (((node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 2][c + 2] == '\0')
+                        || (node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == '\0' && node.currBoard[r - 3][c + 3] == '\0')
+                        || (node.currBoard[r - 2][c + 2] == playChar && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 3][c + 3] == '\0'))
+                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
+                    {
+                        numDoubles++;
                     }
                 }
             }
