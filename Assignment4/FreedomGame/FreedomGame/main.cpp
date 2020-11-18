@@ -1,188 +1,511 @@
-/* 
- Date: 11/17/2020
- Name: Thomas Laverghetta 
- Project: Assignment 4
-*///**********************************************************************************
+#include <vector>
+#include <string>
+#include <iostream>
+#define MAX_ROW 8
+#define MAX_COL 8
+#define MAX_SCORE INT_MAX
+#define MIN_SCORE INT_MIN
+typedef int score;
 
+using namespace std;
 
-#include "TicTacToe.h"
-#include "AudioPlayer.h"
+// node represents game board
+struct Node {
+    uint8_t lastPlay[2];    // last play to create current board. row, col
+    char currBoard[MAX_ROW][MAX_COL];
+    Node() {
+        for (uint8_t r = 0; r < MAX_ROW; r++) {
+            for (uint8_t c = 0; c < MAX_COL; c++) {
+                currBoard[r][c] = '\0';
+            }
+        }
+    }
+};
 
-int main()
-{
-	// Changing the color of the exe window
-	system("color f0");
-	
-	cout << "\tPLEASE HAVE AUDIO ON!!! There is Music Playing in the background. \n\n";
+score Max(const score& a, const score& b) {
+    if (a > b)
+        return a;
+    else
+        return b;
+}
+score Min(const score& a, const score& b) {
+    if (a < b)
+        return a;
+    else
+        return b;
+}
 
-	// Declaring the variables to use in the main
-	int player, Choice;
-	int Game;
-	int AI;
-	bool go, Players;
-	char WHY;
+// returns a set of possible moves
+vector<Node> PossibleMoves(const Node& node, bool player) {
+    vector<Node> nodeSet;
 
-// goto statement
-Play:
-	// Clearing any music that might be playing in the back ground
-	Clear();
+    // r + 1, c
+    if (node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1];
 
-	// Starting the back gound music
-	BackGroundMusic();
+        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r - 1, c
+    if (node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1];
 
-	// initalizing the two players
-	TicTacToe Plays;
-	do {
-		/* Prompt for method of the game*/
-		cout << "Player Vs Player, or Player Vs Compuer? (1 or 2): ";
-		cin >> AI;
-		cin.ignore();
+        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r, c + 1
+    if (node.lastPlay[1] + 1 < MAX_COL && node.currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0];
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
 
-		// Error checking player input
-		if (AI <= 0 || AI >= 3) {
-			cout << "Error, invalid input, please try again: \a\n"; // there's a bell
-		}
-	} while (AI <= 0 || AI >= 3); // if invalid input loop
+        nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r, c - 1
+    if (node.lastPlay[1] - 1 >= 0 && node.currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0];
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
 
-	// Player Vs Player
-	if (AI == 1) {
-		// Introduction...
-		// Players enter thier names 
-		Plays.Enter_Player_Name(0, false); // 0 = player one
-		Plays.Enter_Player_Name(1, false); // 1 = player two
-	}
-	// Computer Vs Player 
-	else if (AI == 2) {
-		Plays.Enter_Player_Name(0, false); // PLayer
-		Plays.Enter_Player_Name(1, true); // computer
-	}
-	// seeing if the user wants to choose who goes first or if they want to choose 
-	do {
-		cout << "Do you wnat to choose who goes first (1) or Let the computer Choose (2): ";
-		cin >> Choice;
-		// Who plays first?
+        nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r + 1, c + 1
+    if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
 
-		// Player chooses
-		if (Choice == 1) {
-			do {
-				cout << "\nWhat person do you want first Player 1 or 2?: ";
-				cin >> player;
-				// making sure place in right value
-				if (player <= 0 || player >= 3) {
-					cout << "\nERROR, invalid input, please try again \a\n"; // bell
-					cin.clear();
-					cin.ignore();
-					Players = false;
-				}
-				else {
-					Players = true;
-					player--; // Since player can only be 1 or 0 however the user is allowed to place in 2 or 1
-				}
-			} while (!Players); // loop if players is false
-			go = true;
-		}
+        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r + 1, c - 1
+    if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
 
-		// Computer Chooses
-		else if (Choice == 2) {
-			player = Plays.First_Player();
-			go = true;
-		}
-		// Error with input
-		else {
-			go = false;
-			cout << "Error, Invalid input, Please try Again: \n\a"; // bell
-		}
-	} while (!go); // loop if go is false
+        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r - 1, c + 1
+    if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
 
-	Clear(); // Stop Jeopordy music
-	BattleMusic(); // Start Battle Music
+        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    // r - 1, c - 1
+    if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] == '\0') {
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
 
-	for (; ; ) {
+        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    }
+    return nodeSet;
+}
 
-		// PLayer enter their moves
-		Plays.Make_Move(player);
+// returns whether this is a leaf node
+bool IsLeaf(const Node& node) {
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            if (node.currBoard[r][c] == '\0')
+                return false;
+        }
+    }
+    return true;
+}
 
-		Game = Plays.Game_Over(player);
-		if (Game == 1) {
-			// Asking if the computer Playing (Player Vs Computer)
-			if (AI == 2) {
-				// if Computer won than play music for computer
-				if (player == 1) {
-					Plays.Display_Board(); // displaying baord
-					Clear(); // clearing the last song
-					CompWin(); // Play computer win song
-					cout << " Won! GG!\n\n";
-				}
-				// IF the user wins against the computer
-				else {
-					Plays.Display_Board(); // displaying the baord
-					Plays.Display_Player_Name(player); // displaying the player
-					Clear(); // clearing the last song
-					Victory(); // Play victory song for user
-					cout << " Won! GG! \n\n";
-				}
-			}
-			// If Player Vs Player
-			else{
-				// displaying the board
-				Plays.Display_Board();
+// Checks number of lives for given player
+uint8_t NumLives(const Node& node, bool player) { // player = true == AI == 'B'
+    char playChar = (player ? 'B' : 'W');
+    vector<uint8_t[4][2]> lives;
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            if (node.currBoard[r][c] == playChar) {
+                // checking North
+                if (r + 3 < MAX_ROW) {
+                    if (node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if (l[0][0] - l[1][0] != 0 || l[0][1] != c)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][0] == r + 1 || l[i][0] == r + 2 || l[i][0] == r + 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r + i;
+                                live[i][1] = c;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-				// displaying players name
-				Plays.Display_Player_Name(player);
+                // checking North-East
+                if (c + 3 < MAX_COL && r + 3 < MAX_ROW) {
+                    if (node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r + 1 || l[i][1] == c + 1 ||
+                                    l[i][0] == r + 2 || l[i][1] == c + 2 || l[i][0] == r + 3 || l[i][1] == c + 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r + i;
+                                live[i][1] = c + i;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-				// stopping the music
-				Clear();
+                // checking East
+                if (c + 3 < MAX_COL) {
+                    if (node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 1] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or r then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 0 || l[0][0] != r)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][1] == c || l[i][1] == c + 1 || l[i][1] == c + 2 || l[i][1] == c + 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r;
+                                live[i][1] = c + i;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-				// starting playing the Player Victory song
-				Victory();
+                // checking Sourth-East
+                if (c + 3 < MAX_COL && r - 3 >= 0) {
+                    if (node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != -1)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r - 1 || l[i][1] == c + 1 ||
+                                    l[i][0] == r - 2 || l[i][1] == c + 2 || l[i][0] == r - 3 || l[i][1] == c + 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r - i;
+                                live[i][1] = c + i;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-				// display win!
-				cout << " Won! GG!\n\n";
-			}
-			break; // break for win
-		}
-		// if the Cat Won
-		else if (Game == 2) {
-			// Stop the current song
-			Clear();
+                // checking South
+                if (r - 3 >= 0) {
+                    if (node.currBoard[r - 3][c] == 'B' && node.currBoard[r - 1][c] == 'B' && node.currBoard[r - 2][c] == 'B')
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if (l[0][0] - l[1][0] != 0 || l[0][1] != c)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][0] == r - 1 || l[i][0] == r - 2 || l[i][0] == r - 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r - i;
+                                live[i][1] = c;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-			// start playing Cat song
-			CatVictory();
+                // checking South-West
+                if (r - 3 >= 0 && c - 3 >= 0) {
+                    if (node.currBoard[r - 3][c - 3] == playChar && node.currBoard[r - 1][c - 1] == playChar && node.currBoard[r - 2][c - 2] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r - 1 || l[i][1] == c - 1 ||
+                                    l[i][0] == r - 2 || l[i][1] == c - 2 || l[i][0] == r - 3 || l[i][1] == c - 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r - i;
+                                live[i][1] = c - i;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-			// display board
-			Plays.Display_Board();
+                // checking west
+                if (c - 3 >= 0) {
+                    if (node.currBoard[r][c - 3] == playChar && node.currBoard[r][c - 1] == playChar && node.currBoard[r][c - 1] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or r then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 0 || l[0][0] != r)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][1] == c || l[i][1] == c - 1 || l[i][1] == c - 2 || l[i][1] == c - 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r;
+                                live[i][1] = c - i;
+                            }
+                            lives.push_back(live);
+                        }
+                    }
+                }
 
-			// display that the cat won
-			cout << "The CAT Won! DRAW GG!\n\n";
-			break; // break for win
-		}
-		/*
-		Next player
-		0 or 1
-		*/
-		if (player == 0) player = 1;
-		else if (player == 1) player = 0;
-	}
-	bool WHYY; // for error for playing again
-	do {
-		// prompting the user if they want to play again
-		cout << "Would you like to play Again? (Y or N): ";
-		cin >> WHY;
-		if (ListMatcher(WHY, { 'y','Y' })) {
-			goto Play; // goto play statement above
-		}
-		else if (ListMatcher(WHY, { 'n','N' })) {
-			cout << "\nCool\n";
-			Clear(); // stopping current song
-			ThatAllFolks(); // Playing outTro
-			WHYY = true;
-		}
-		else {
-			cout << "\nInvalid Input. Try Again: \a\n"; // bell
-			WHYY = false; // Loop becuase false
-		}
-	} while (!WHYY); // for detecting error in user input
-					 // Loop if WHYY = false
-	system("pause");
-	return 0;
+                // checking west-north
+                if (r + 3 < MAX_ROW && c - 3 >= 0) {
+                    if (node.currBoard[r + 3][c - 3] == playChar && node.currBoard[r + 1][c - 1] == playChar && node.currBoard[r + 2][c - 2] == playChar)
+                    {
+                        bool conflict = false;
+                        for (auto& l : lives) {
+                            // if its slope does not match or col then no lives which make this one. 
+                            if ((l[0][1] - l[1][1]) / (l[0][0] - l[1][0]) != 1)
+                                continue;
+                            for (uint8_t i = 0; i < 4; i++) {
+                                // if point matches, then automatically north r,c is not a live
+                                if (l[i][0] == r || l[i][1] == c || l[i][0] == r + 1 || l[i][1] == c - 1 ||
+                                    l[i][0] == r + 2 || l[i][1] == c - 2 || l[i][0] == r + 3 || l[i][1] == c - 3) {
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                            if (conflict)
+                                break;
+                        }
+                        if (!conflict)
+                        {
+                            uint8_t live[4][2];
+                            for (uint8_t i = 0; i < 4; i++) {
+                                live[i][0] = r + i;
+                                live[i][1] = c - i;
+                            }
+                            lives.push_back(live);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    return lives.size();
+}
+
+// returns the node's score
+score NodeScore(const Node& node) {
+    return NumLives(node, true);
+}
+
+int MAX_DEPTH = 10; Node* next_move = nullptr;
+// minimax search algorithm
+score Minimax(Node node, int depth, bool isMax, score alpha, score beta) {
+    if (depth == MAX_DEPTH || IsLeaf(node))
+        return NodeScore(node);
+
+    score bestVal;
+    if (isMax) {
+        bestVal = MIN_SCORE;
+        for (auto& child : PossibleMoves(node, isMax)) {
+            score value = Minimax(child, depth + 1, false, alpha, beta);
+            bestVal = Max(bestVal, value);
+            alpha = Max(alpha, bestVal);
+            if (beta <= alpha) {
+                next_move = &child;
+                break;
+            }
+        }
+    }
+    else {
+        bestVal = MAX_SCORE;
+        for (auto& child : PossibleMoves(node, isMax)) {
+            score value = Minimax(child, depth + 1, true, alpha, beta);
+            bestVal = Min(bestVal, value);
+            alpha = Min(beta, bestVal);
+            if (beta <= alpha) {
+                next_move = &child;
+                break;
+            }
+        }
+    }
+    return bestVal;
+}
+
+// diplays game board
+void PrintBoard(const Node& node) {
+
+    printf("\n");
+    char letter = 'A';
+    printf("  ");
+    for (uint8_t r = 1; r <= MAX_ROW; r++) {
+        printf(" %i |", r);
+    }
+    cout << endl;
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        cout << " " << string(2 + 4* MAX_COL, '-') << endl;
+        printf("%c|", letter++);
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            printf(" %c |", node.currBoard[r][c]);
+        }
+        cout << endl;
+    }
+    cout << " " << string(2 + 4 * MAX_COL, '-') << endl;
+}
+
+// user input checking
+uint8_t LetterToRow(const char& letter) {
+    if (letter <= 'z' && letter >= 'a') {
+        return letter - 97;
+    }
+    else if (letter <= 'Z' && letter >= 'A') {
+        return letter - 65;
+    }
+    else {
+        printf("ERROR: Please re-enter\n\a");
+
+        // Clearing and ignoring the last cin
+        cin.clear();
+        cin.ignore();
+
+        return -1;
+    }
+}
+bool ValidMove(const Node& node, const uint8_t& r, const uint8_t& c) {
+    return node.currBoard[r][c] == '\0';
+}
+
+int main() {
+    // Changing the color of the exe window
+    cout << "\tPLEASE HAVE AUDIO ON!!! There is Music Playing in the background. \n\n";
+    cout << "\n\nWelcome to Freedom!\n";
+
+    // declare node and print board
+    Node node;
+    PrintBoard(node);
+
+    bool turn = true;   // true == person, false == computer
+    bool over = false;
+    while (!over) {
+        if (turn) {
+            char letter; int col; uint8_t row;
+            do {
+                printf("Please make a move (RowCol Ex: A3): ");
+                cin >> letter >> col;
+                col--;
+                row = LetterToRow(letter);
+                if (row != -1) {
+                    if (!ValidMove) {
+                        printf("ERROR: Please re-enter\n\a");
+                        row = -1;
+                        // Clearing and ignoring the last cin
+                        cin.clear();
+                        cin.ignore();
+                    }
+                }
+            } while (row == -1);
+            node.lastPlay[0] = row;
+            node.lastPlay[1] = col;
+            node.currBoard[row][col] = 'W';
+        }
+        else {
+            Minimax(node, 0, true, MIN_SCORE, MAX_SCORE);
+
+        }
+
+        over = IsLeaf(node);
+
+        turn = !turn;
+        PrintBoard(node);
+    }
+    return 0;
 }
