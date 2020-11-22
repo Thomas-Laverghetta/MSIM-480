@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 #include "AudioPlayer.h"
-#define MAX_ROW 8
-#define MAX_COL 8
+#define MAX_ROW 5
+#define MAX_COL 5
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
 typedef unsigned int score;
@@ -196,125 +196,365 @@ score NodeScore(const Node& node) {
     for (uint8_t r = 0; r < MAX_ROW; r++) {
         for (uint8_t c = 0; c < MAX_COL; c++) {
             if (node.currBoard[r][c] == playChar) {
-                // checking North
-                if (r + 3 < MAX_ROW) {
-                    if (node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == playChar &&
-                        (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
-                    {
-                        numLives++;
+                // checking south
+                if (r + 3 < MAX_ROW && (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = r; i <= r + 3; i++) {
+                        if (node.currBoard[i][c] == playChar)
+                            count++;
+                        else if (node.currBoard[i][c] != '\0') { // if other player's stone in segment
+                            count = -1;
+                            break;
+                        }
                     }
-                    // if a stone has a path to get live (i.e., empty spaces)
-                    else if (node.currBoard[r + 3][c] == '\0' && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0' &&
-                        (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
-                    {
+
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
                         numSingles++;
-                    }
-                    // if three stones have a path to get a live 
-                    else if (((node.currBoard[r + 3][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 2][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 2][c] == '\0'))
-                        || (node.currBoard[r + 2][c] == playChar && (node.currBoard[r + 1][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 1][c] == '\0' || node.currBoard[r + 3][c] == '\0'))
-                        || (node.currBoard[r + 1][c] == playChar && (node.currBoard[r + 2][c] == playChar || node.currBoard[r + 3][c] == playChar) && (node.currBoard[r + 2][c] == '\0' || node.currBoard[r + 3][c] == '\0')))
-                        && (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true))
-                    {
-                        numTriples++;
-                    }
-                    // if two stones have path to get a live
-                    else if (((node.currBoard[r + 3][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 2][c] == '\0')
-                        || (node.currBoard[r + 1][c] == playChar && node.currBoard[r + 2][c] == '\0' && node.currBoard[r + 3][c] == '\0')
-                        || (node.currBoard[r + 2][c] == playChar && node.currBoard[r + 1][c] == '\0' && node.currBoard[r + 3][c] == '\0')) 
-                        && (r + 4 < MAX_ROW ? node.currBoard[r + 4][c] != playChar : true) && (r - 1 >= 0 ? node.currBoard[r - 1][c] != playChar : true)) 
-                    {
+                        break;
+                    case 2:
                         numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    default:
+                        numLives++;
+                        break;
                     }
                 }
+
+                /// checking north 3
+                if (r - 3 >= 0 && node.currBoard[r - 3][c] == '\0' && node.currBoard[r - 1][c] == '\0' && node.currBoard[r - 2][c] == '\0'
+                    && (r - 4 >= 0 ? node.currBoard[r - 4][c] != playChar : true) && (r + 1 < MAX_ROW ? node.currBoard[r + 1][c] != playChar : true)) {
+                    numSingles++;
+                }
+
+                // checking north 2 and down one
+                if (r - 2 >= 0 && r + 1 < MAX_ROW && (r - 3 >= 0 ? node.currBoard[r - 3][c] != playChar : true) && (r + 2 < MAX_ROW ? node.currBoard[r + 2][c] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = r - 2; i <= r + 1; i++) {
+                        if (node.currBoard[i][c] == playChar)
+                            count++;
+                        else if (node.currBoard[i][c] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                // checking north 1 and south 2
+                if (r - 1 >= 0 && r + 2 < MAX_ROW && (r - 2 >= 0 ? node.currBoard[r - 2][c] != playChar : true) && (r + 3 < MAX_ROW ? node.currBoard[r + 3][c] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = r - 1; i <= r + 2; i++) {
+                        if (node.currBoard[i][c] == playChar)
+                            count++;
+                        else if (node.currBoard[i][c] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                /////////////////
 
                 // checking North-East
-                if (c + 3 < MAX_COL && r + 3 < MAX_ROW) {
-                    if (node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == playChar
-                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
-                    {
-                        numLives++;
+                if (c + 3 < MAX_COL && r + 3 < MAX_ROW && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = 1; i <= 3; i++) {
+                        if (node.currBoard[r + i][c + i] == playChar)
+                            count++;
+                        else if (node.currBoard[r + i][c + i] != '\0') { // if other player's stone in segment
+                            count = -1;
+                            break;
+                        }
                     }
-                    // if three stones have a path to get a live 
-                    else if (node.currBoard[r + 3][c + 3] == '\0' && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 2][c + 2] == '\0' &&
-                        (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
-                    {
+
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 0:
                         numSingles++;
-                    }
-                    // if three stones have a path to get a live 
-                    else if (((node.currBoard[r + 3][c + 3] == playChar && (node.currBoard[r + 1][c + 1] == playChar || node.currBoard[r + 2][c + 2] == playChar) && (node.currBoard[r + 1][c + 1] == '\0' || node.currBoard[r + 2][c + 2] == '\0'))
-                        || (node.currBoard[r + 2][c + 2] == playChar && (node.currBoard[r + 1][c + 1] == playChar || node.currBoard[r + 3][c + 3] == playChar) && (node.currBoard[r + 1][c + 1] == '\0' || node.currBoard[r + 3][c + 3] == '\0'))
-                        || (node.currBoard[r + 1][c + 1] == playChar && (node.currBoard[r + 2][c + 2] == playChar || node.currBoard[r + 3][c + 3] == playChar) && (node.currBoard[r + 2][c + 2] == '\0' || node.currBoard[r + 3][c + 3] == '\0')))
-                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
-                    {
-                        numTriples++;
-                    }
-                    // if two stones have path to get a live
-                    else if (((node.currBoard[r + 3][c + 3] == playChar && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 2][c + 2] == '\0')
-                        || (node.currBoard[r + 1][c + 1] == playChar && node.currBoard[r + 2][c + 2] == '\0' && node.currBoard[r + 3][c + 3] == '\0')
-                        || (node.currBoard[r + 2][c + 2] == playChar && node.currBoard[r + 1][c + 1] == '\0' && node.currBoard[r + 3][c + 3] == '\0'))
-                        && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true))
-                    {
+                        break;
+                    case 1:
                         numDoubles++;
+                        break;
+                    case 2:
+                        numTriples++;
+                        break;
+                    default:
+                        numLives++;
+                        break;
                     }
                 }
+
+                // checking North-West diagnal
+                if (c - 3 >= 0 && r - 3 >= 0 && node.currBoard[r - 3][c - 3] == '\0' && node.currBoard[r - 1][c - 1] == '\0' && node.currBoard[r - 2][c - 2] == '\0'
+                    && (r - 4 >= 0 && c - 4 >= 0 ? node.currBoard[r - 4][c - 4] != playChar : true) && (r + 1 < MAX_ROW && c + 1 < MAX_COL ? node.currBoard[r + 1][c + 1] != playChar : true)) {
+                    numSingles++;
+                }
+
+                if (c - 2 >= 0 && c + 1 < MAX_COL && r - 2 >= 0 && r + 1 < MAX_ROW 
+                    && (r - 3 >= 0 && c - 3 >= 0 ? node.currBoard[r - 3][c - 3] != playChar : true) && (r + 2 < MAX_ROW && c + 2 < MAX_COL ? node.currBoard[r + 2][c + 2] != playChar : true)) {
+
+                    int8_t count = 0;
+                    for (int8_t i = -2; i <= 1; i++) {
+                        if (node.currBoard[r + i][c + i] == playChar)
+                            count++;
+                        else if (node.currBoard[r + i][c + i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                if (c - 1 >= 0 && c + 2 < MAX_COL && r - 1 >= 0 && r + 2 < MAX_ROW
+                    && (r - 2 >= 0 && c - 2 >= 0 ? node.currBoard[r - 2][c - 2] != playChar : true) && (r + 3 < MAX_ROW && c + 3 < MAX_COL ? node.currBoard[r + 3][c + 3] != playChar : true)) {
+
+                    int8_t count = 0;
+                    for (int8_t i = -1; i <= 2; i++) {
+                        if (node.currBoard[r + i][c + i] == playChar)
+                            count++;
+                        else if (node.currBoard[r + i][c + i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                /////////////////
 
                 // checking East
-                if (c + 3 < MAX_COL) {
-                    if (node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 2] == playChar &&
-                        (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
-                    {
-                        numLives++;
+                if (c + 3 < MAX_COL && (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = c + 1; i <= c + 3; i++) {
+                        if (node.currBoard[r][i] == playChar)
+                            count++;
+                        else if (node.currBoard[r][i] != '\0') { // if other player's stone in segment
+                            count = -1;
+                            break;
+                        }
+                    }
 
-                    }
-                    else if (node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 2] == '\0' && node.currBoard[r][c + 1] == '\0' &&
-                        (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
-                    {
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 0:
                         numSingles++;
-                    }
-                    else if (((node.currBoard[r][c + 3] == playChar && (node.currBoard[r][c + 2] == playChar || node.currBoard[r][c + 1] == playChar) && (node.currBoard[r][c + 2] == '\0' || node.currBoard[r][c + 1] == '\0'))
-                        || (node.currBoard[r][c + 2] == playChar && (node.currBoard[r][c + 3] == playChar || node.currBoard[r][c + 1] == playChar) && (node.currBoard[r][c + 3] == '\0' || node.currBoard[r][c + 1] == '\0'))
-                        || (node.currBoard[r][c + 1] == playChar && (node.currBoard[r][c + 3] == playChar || node.currBoard[r][c + 2] == playChar) && (node.currBoard[r][c + 3] == '\0' || node.currBoard[r][c + 2] == '\0')))
-                        && (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
-                    {
-                        numTriples++;
-                    }
-                    else if (((node.currBoard[r][c + 3] == playChar && node.currBoard[r][c + 2] == '\0' && node.currBoard[r][c + 1] == '\0')
-                        || (node.currBoard[r][c + 2] == playChar && node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 1] == '\0')
-                        || (node.currBoard[r][c + 1] == playChar && node.currBoard[r][c + 3] == '\0' && node.currBoard[r][c + 2] == '\0'))
-                        && (c + 4 < MAX_COL ? node.currBoard[r][c + 4] != playChar : true) && (c - 1 >= 0 ? node.currBoard[r][c - 1] != playChar : true))
-                    {
+                        break;
+                    case 1:
                         numDoubles++;
+                        break;
+                    case 2:
+                        numTriples++;
+                        break;
+                    default:
+                        numLives++;
+                        break;
                     }
                 }
 
-                // checking Sourth-East
-                if (c + 3 < MAX_COL && r - 3 >= 0) {
-                    if (node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == playChar
-                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
-                    {
-                        numLives++;
+                /// checking south 3
+                if (c - 3 >= 0 && node.currBoard[r][c - 3] == '\0' && node.currBoard[r][c - 2] == '\0' && node.currBoard[r][c - 1] == '\0'
+                    && (c - 4 >= 0 ? node.currBoard[r][c - 4] != playChar : true) && (c + 1 < MAX_COL ? node.currBoard[r][c + 1] != playChar : true)) {
+                    numSingles++;
+                }
+
+                // checking south 2 and north 1
+                if (c - 2 >= 0 && c + 1 < MAX_COL && (c - 3 >= 0 ? node.currBoard[r][c - 3] != playChar : true) && (c + 2 < MAX_COL ? node.currBoard[r][c + 2] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = c - 2; i <= c + 1; i++) {
+                        if (node.currBoard[r][i] == playChar)
+                            count++;
+                        else if (node.currBoard[r][i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
                     }
-                    // if three stones have a path to get a live 
-                    else if (node.currBoard[r - 3][c + 3] == '\0' && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 2][c + 2] == '\0' &&
-                        (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
-                    {
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
                         numSingles++;
-                    }
-                    // if three stones have a path to get a live 
-                    else if (((node.currBoard[r - 3][c + 3] == playChar && (node.currBoard[r - 1][c + 1] == playChar || node.currBoard[r - 2][c + 2] == playChar) && (node.currBoard[r - 1][c + 1] == '\0' || node.currBoard[r - 2][c + 2] == '\0'))
-                        || (node.currBoard[r - 2][c + 2] == playChar && (node.currBoard[r - 1][c + 1] == playChar || node.currBoard[r - 3][c + 3] == playChar) && (node.currBoard[r - 1][c + 1] == '\0' || node.currBoard[r - 3][c + 3] == '\0'))
-                        || (node.currBoard[r - 1][c + 1] == playChar && (node.currBoard[r - 2][c + 2] == playChar || node.currBoard[r - 3][c + 3] == playChar) && (node.currBoard[r - 2][c + 2] == '\0' || node.currBoard[r - 3][c + 3] == '\0')))
-                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
-                    {
-                        numTriples++;
-                    }
-                    // if two stones have path to get a live
-                    else if (((node.currBoard[r - 3][c + 3] == playChar && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 2][c + 2] == '\0')
-                        || (node.currBoard[r - 1][c + 1] == playChar && node.currBoard[r - 2][c + 2] == '\0' && node.currBoard[r - 3][c + 3] == '\0')
-                        || (node.currBoard[r - 2][c + 2] == playChar && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 3][c + 3] == '\0'))
-                        && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true))
-                    {
+                        break;
+                    case 2:
                         numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                // checking south 1 and north 2
+                if (c - 1 >= 0 && c + 2 < MAX_COL && (c - 2 >= 0 ? node.currBoard[r][c - 2] != playChar : true) && (c + 3 < MAX_COL ? node.currBoard[r][c + 3] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = c - 1; i <= c + 2; i++) {
+                        if (node.currBoard[r][i] == playChar)
+                            count++;
+                        else if (node.currBoard[r][i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                /////////////////
+
+                // checking Sourth-East
+                if (c - 3 >= 0 && r + 3 < MAX_ROW && (r + 4 < MAX_ROW && c - 4 >= 0 ? node.currBoard[r + 4][c - 4] != playChar : true) && (r - 1 >= 0 && c + 1 < MAX_COL ? node.currBoard[r - 1][c + 1] != playChar : true)) {
+                    int8_t count = 0;
+                    for (uint8_t i = 1; i <= 3; i++) {
+                        if (node.currBoard[r + i][c - i] == playChar)
+                            count++;
+                        else if (node.currBoard[r + i][c - i] != '\0') { // if other player's stone in segment
+                            count = -1;
+                            break;
+                        }
+                    }
+
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 0:
+                        numSingles++;
+                        break;
+                    case 1:
+                        numDoubles++;
+                        break;
+                    case 2:
+                        numTriples++;
+                        break;
+                    default:
+                        numLives++;
+                        break;
+                    }
+                }
+
+                // checking north-east diagnal
+                if (c + 3 < MAX_COL && r - 3 >= 0 && node.currBoard[r - 3][c + 3] == '\0' && node.currBoard[r - 1][c + 1] == '\0' && node.currBoard[r - 2][c + 2] == '\0'
+                    && (r - 4 >= 0 && c + 4 < MAX_COL ? node.currBoard[r - 4][c + 4] != playChar : true) && (r + 1 < MAX_ROW && c - 1 >= 0 ? node.currBoard[r + 1][c - 1] != playChar : true)) {
+                    numSingles++;
+                }
+
+                if (c + 2 < MAX_COL && c - 1 >= 0 && r + 1 < MAX_ROW && r - 2 >=0 
+                    && (r - 3 >= 0 && c + 3 < MAX_COL ? node.currBoard[r - 3][c + 3] != playChar : true) && (r + 2 < MAX_ROW && c - 2 >= 0 ? node.currBoard[r + 2][c - 2] != playChar : true)) {
+
+                    int8_t count = 0;
+                    for (int8_t i = -1; i <= 2; i++) {
+                        if (node.currBoard[r - i][c + i] == playChar)
+                            count++;
+                        else if (node.currBoard[r - i][c + i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
+                    }
+                }
+
+                if (c + 1 < MAX_COL && c - 2 >= 0 && r + 2 < MAX_ROW && r - 1 >= 0
+                    && (r - 2 >= 0 && c + 2 < MAX_COL ? node.currBoard[r - 2][c + 2] != playChar : true) && (r + 3 < MAX_ROW && c - 3 >= 0 ? node.currBoard[r + 3][c - 3] != playChar : true)) {
+
+                    int8_t count = 0;
+                    for (int8_t i = -2; i <= 1; i++) {
+                        if (node.currBoard[r - i][c + i] == playChar)
+                            count++;
+                        else if (node.currBoard[r - i][c + i] != '\0') { // not player stone found
+                            count = -1;
+                            break;
+                        }
+                    }
+                    switch (count) {
+                    case -1:
+                        break;
+                    case 1:
+                        numSingles++;
+                        break;
+                    case 2:
+                        numDoubles++;
+                        break;
+                    case 3:
+                        numTriples++;
+                        break;
                     }
                 }
             }
@@ -325,7 +565,7 @@ score NodeScore(const Node& node) {
     return numSingles + numDoubles*2 + numTriples*3 + numLives*4;
 }
 
-unsigned int MAX_DEPTH = 4; Node next_move;
+unsigned int MAX_DEPTH = 6; Node next_move;
 // minimax search algorithm
 score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta) {
     if (depth == MAX_DEPTH || IsLeaf(node))
@@ -450,11 +690,11 @@ int main() {
     cout << "\tPLEASE HAVE AUDIO ON!!! There is Music Playing in the background. \n\n";
     cout << "\n\nWelcome to Freedom!\n";
 
-    // Clearing any music that might be playing in the back ground
-    Clear();
+    //// Clearing any music that might be playing in the back ground
+    //Clear();
 
-    // Starting the back gound music
-    BattleMusic();
+    //// Starting the back gound music
+    //BattleMusic();
 
     // declare node and print board
     Node node;
