@@ -19,7 +19,7 @@ void BackGroundMusic() {
 void BattleMusic()
 {
 	// Opens the Pokemon Battle song file
-	mciSendString(TEXT("open \"107-battle (vs wild pokemon).mp3\" type mpegvideo alias mp3"), NULL, 0, NULL);
+	mciSendString(TEXT("open \"vs_darkdragon.mp3\" type mpegvideo alias mp3"), NULL, 0, NULL);
 	
 	// Play pokemon with a repeat
 	mciSendString(TEXT("play mp3 repeat"), NULL, 0, NULL);

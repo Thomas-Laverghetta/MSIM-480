@@ -2,11 +2,11 @@
 #include <string>
 #include <iostream>
 #include "AudioPlayer.h"
-#define MAX_ROW 5
-#define MAX_COL 5
+#define MAX_ROW 4
+#define MAX_COL 4
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
-typedef unsigned int score;
+typedef int score;
 using namespace std;
 
 // node represents game board
@@ -14,8 +14,8 @@ struct Node {
     uint8_t lastPlay[2];    // last play to create current board. row, col
     char currBoard[MAX_ROW][MAX_COL];
     Node() {
-        lastPlay[0] = -1;
-        lastPlay[1] = -1;
+        lastPlay[0] = MAX_ROW;
+        lastPlay[1] = MAX_COL;
         for (uint8_t r = 0; r < MAX_ROW; r++) {
             for (uint8_t c = 0; c < MAX_COL; c++) {
                 currBoard[r][c] = '\0';
@@ -41,85 +41,117 @@ score Min(const score& a, const score& b) {
 vector<Node> PossibleMoves(const Node& node, bool player) {
     vector<Node> nodeSet;
 
-    // r + 1, c
-    if (node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1];
-
-        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r - 1, c
-    if (node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1];
-
-        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r, c + 1
-    if (node.lastPlay[1] + 1 < MAX_COL && node.currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0];
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r, c - 1
-    if (node.lastPlay[1] - 1 >= 0 && node.currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0];
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r + 1, c + 1
-    if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r + 1, c - 1
-    if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r - 1, c + 1
-    if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
-    }
-    // r - 1, c - 1
-    if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] == '\0') {
-        nodeSet.push_back(node);
-        nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
-        nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
-
-        nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+    uint8_t count = 0; bool onlyOneRemaining = true;
+    uint8_t index[2];
+    for (uint8_t r = 0; r < MAX_ROW; r++) {
+        for (uint8_t c = 0; c < MAX_COL; c++) {
+            count += node.currBoard[r][c] == '\0';
+            index[0] = r;
+            index[1] = c;
+            if (count > 1) {
+                onlyOneRemaining = false;
+                break;
+            }
+        }
     }
 
-    // if there is no empty spots adjacent to last play, then all empty spots are available
-    if (nodeSet.size() == 0) {
-        for (uint8_t r = 0; r < MAX_ROW; r++) {
-            for (uint8_t c = 0; c < MAX_COL; c++) {
-                // if empty spot, add to set of possible moves
-                if (node.currBoard[r][c] == '\0') {
-                    nodeSet.push_back(node);
-                    nodeSet.back().lastPlay[0] = r;
-                    nodeSet.back().lastPlay[1] = c;
+    if (onlyOneRemaining) {
+        // r + 1, c
+        if (node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1];
 
-                    nodeSet.back().currBoard[r][c] = 'B' * player + 'W' * !player; // AI is black, person is white
+            nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r - 1, c
+        if (node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1];
+
+            nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r, c + 1
+        if (node.lastPlay[1] + 1 < MAX_COL && node.currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0];
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r, c - 1
+        if (node.lastPlay[1] - 1 >= 0 && node.currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0];
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0]][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r + 1, c + 1
+        if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r + 1, c - 1
+        if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] + 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0] + 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r - 1, c + 1
+        if (node.lastPlay[1] + 1 < MAX_COL && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] + 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] + 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+        // r - 1, c - 1
+        if (node.lastPlay[1] - 1 >= 0 && node.lastPlay[0] - 1 >= 0 && node.currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] == '\0') {
+            nodeSet.push_back(node);
+            nodeSet.back().lastPlay[0] = node.lastPlay[0] - 1;
+            nodeSet.back().lastPlay[1] = node.lastPlay[1] - 1;
+
+            nodeSet.back().currBoard[node.lastPlay[0] - 1][node.lastPlay[1] - 1] = 'B' * player + 'W' * !player; // AI is black, person is white
+        }
+
+        // if there is no empty spots adjacent to last play, then all empty spots are available
+        if (nodeSet.size() == 0) {
+            for (uint8_t r = 0; r < MAX_ROW; r++) {
+                for (uint8_t c = 0; c < MAX_COL; c++) {
+                    // if empty spot, add to set of possible moves
+                    if (node.currBoard[r][c] == '\0') {
+                        nodeSet.push_back(node);
+                        nodeSet.back().lastPlay[0] = r;
+                        nodeSet.back().lastPlay[1] = c;
+
+                        nodeSet.back().currBoard[r][c] = 'B' * player + 'W' * !player; // AI is black, person is white
+                    }
                 }
             }
         }
+    }
+    else {
+        // ai makes remaining move (one empty spot)
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = index[0];
+        nodeSet.back().lastPlay[1] = index[1];
+
+        nodeSet.back().currBoard[index[0]][index[1]] = 'B' * player + 'W' * !player; // AI is black, person is white
+
+        // ai does not make last move
+        nodeSet.push_back(node);
+        nodeSet.back().lastPlay[0] = index[0];
+        nodeSet.back().lastPlay[1] = index[1];
+
+        nodeSet.back().currBoard[index[0]][index[1]] = ' '; // space == last space
+
     }
     return nodeSet;
 }
@@ -232,11 +264,11 @@ score NodeScore(const Node& node) {
                     numSingles++;
                 }
 
-                // checking north 2 and down one
+                // checking north 2 and south one
                 if (r - 2 >= 0 && r + 1 < MAX_ROW && (r - 3 >= 0 ? node.currBoard[r - 3][c] != playChar : true) && (r + 2 < MAX_ROW ? node.currBoard[r + 2][c] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = r - 2; i <= r + 1; i++) {
-                        if (node.currBoard[i][c] == playChar)
+                        if (node.currBoard[i][c] == playChar && i >= r)
                             count++;
                         else if (node.currBoard[i][c] != '\0') { // not player stone found
                             count = -1;
@@ -262,7 +294,7 @@ score NodeScore(const Node& node) {
                 if (r - 1 >= 0 && r + 2 < MAX_ROW && (r - 2 >= 0 ? node.currBoard[r - 2][c] != playChar : true) && (r + 3 < MAX_ROW ? node.currBoard[r + 3][c] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = r - 1; i <= r + 2; i++) {
-                        if (node.currBoard[i][c] == playChar)
+                        if (node.currBoard[i][c] == playChar && i >= r)
                             count++;
                         else if (node.currBoard[i][c] != '\0') { // not player stone found
                             count = -1;
@@ -286,7 +318,7 @@ score NodeScore(const Node& node) {
 
                 /////////////////
 
-                // checking North-East
+                // checking south-East
                 if (c + 3 < MAX_COL && r + 3 < MAX_ROW && (r + 4 < MAX_ROW && c + 4 < MAX_COL ? node.currBoard[r + 4][c + 4] != playChar : true) && (r - 1 >= 0 && c - 1 >= 0 ? node.currBoard[r - 1][c - 1] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = 1; i <= 3; i++) {
@@ -322,12 +354,13 @@ score NodeScore(const Node& node) {
                     numSingles++;
                 }
 
+                // checking North 2, West 2 and south 1, east 1 diagnal
                 if (c - 2 >= 0 && c + 1 < MAX_COL && r - 2 >= 0 && r + 1 < MAX_ROW 
                     && (r - 3 >= 0 && c - 3 >= 0 ? node.currBoard[r - 3][c - 3] != playChar : true) && (r + 2 < MAX_ROW && c + 2 < MAX_COL ? node.currBoard[r + 2][c + 2] != playChar : true)) {
 
                     int8_t count = 0;
                     for (int8_t i = -2; i <= 1; i++) {
-                        if (node.currBoard[r + i][c + i] == playChar)
+                        if (node.currBoard[r + i][c + i] == playChar && i >= 0)
                             count++;
                         else if (node.currBoard[r + i][c + i] != '\0') { // not player stone found
                             count = -1;
@@ -354,7 +387,7 @@ score NodeScore(const Node& node) {
 
                     int8_t count = 0;
                     for (int8_t i = -1; i <= 2; i++) {
-                        if (node.currBoard[r + i][c + i] == playChar)
+                        if (node.currBoard[r + i][c + i] == playChar && i >= 0)
                             count++;
                         else if (node.currBoard[r + i][c + i] != '\0') { // not player stone found
                             count = -1;
@@ -408,17 +441,17 @@ score NodeScore(const Node& node) {
                     }
                 }
 
-                /// checking south 3
+                /// checking west 3
                 if (c - 3 >= 0 && node.currBoard[r][c - 3] == '\0' && node.currBoard[r][c - 2] == '\0' && node.currBoard[r][c - 1] == '\0'
                     && (c - 4 >= 0 ? node.currBoard[r][c - 4] != playChar : true) && (c + 1 < MAX_COL ? node.currBoard[r][c + 1] != playChar : true)) {
                     numSingles++;
                 }
 
-                // checking south 2 and north 1
+                // checking west 2 and east 1
                 if (c - 2 >= 0 && c + 1 < MAX_COL && (c - 3 >= 0 ? node.currBoard[r][c - 3] != playChar : true) && (c + 2 < MAX_COL ? node.currBoard[r][c + 2] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = c - 2; i <= c + 1; i++) {
-                        if (node.currBoard[r][i] == playChar)
+                        if (node.currBoard[r][i] == playChar && i >= c)
                             count++;
                         else if (node.currBoard[r][i] != '\0') { // not player stone found
                             count = -1;
@@ -440,11 +473,11 @@ score NodeScore(const Node& node) {
                     }
                 }
 
-                // checking south 1 and north 2
+                // checking west 1 and east 2
                 if (c - 1 >= 0 && c + 2 < MAX_COL && (c - 2 >= 0 ? node.currBoard[r][c - 2] != playChar : true) && (c + 3 < MAX_COL ? node.currBoard[r][c + 3] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = c - 1; i <= c + 2; i++) {
-                        if (node.currBoard[r][i] == playChar)
+                        if (node.currBoard[r][i] == playChar && i >= c)
                             count++;
                         else if (node.currBoard[r][i] != '\0') { // not player stone found
                             count = -1;
@@ -508,10 +541,10 @@ score NodeScore(const Node& node) {
                     && (r - 3 >= 0 && c + 3 < MAX_COL ? node.currBoard[r - 3][c + 3] != playChar : true) && (r + 2 < MAX_ROW && c - 2 >= 0 ? node.currBoard[r + 2][c - 2] != playChar : true)) {
 
                     int8_t count = 0;
-                    for (int8_t i = -1; i <= 2; i++) {
-                        if (node.currBoard[r - i][c + i] == playChar)
+                    for (int8_t i = -2; i <= 1; i++) {
+                        if (node.currBoard[r + i][c - i] == playChar && i >= 0)
                             count++;
-                        else if (node.currBoard[r - i][c + i] != '\0') { // not player stone found
+                        else if (node.currBoard[r + i][c - i] != '\0') { // not player stone found
                             count = -1;
                             break;
                         }
@@ -535,10 +568,10 @@ score NodeScore(const Node& node) {
                     && (r - 2 >= 0 && c + 2 < MAX_COL ? node.currBoard[r - 2][c + 2] != playChar : true) && (r + 3 < MAX_ROW && c - 3 >= 0 ? node.currBoard[r + 3][c - 3] != playChar : true)) {
 
                     int8_t count = 0;
-                    for (int8_t i = -2; i <= 1; i++) {
-                        if (node.currBoard[r - i][c + i] == playChar)
+                    for (int8_t i = -1; i <= 2; i++) {
+                        if (node.currBoard[r + i][c - i] == playChar && i >= 0)
                             count++;
-                        else if (node.currBoard[r - i][c + i] != '\0') { // not player stone found
+                        else if (node.currBoard[r + i][c - i] != '\0') { // not player stone found
                             count = -1;
                             break;
                         }
@@ -565,7 +598,7 @@ score NodeScore(const Node& node) {
     return numSingles + numDoubles*2 + numTriples*3 + numLives*4;
 }
 
-unsigned int MAX_DEPTH = 6; Node next_move;
+unsigned int MAX_DEPTH = 10; Node next_move;
 // minimax search algorithm
 score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta) {
     if (depth == MAX_DEPTH || IsLeaf(node))
@@ -577,7 +610,7 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, false, alpha, beta);
             if (depth == 0) {
-                int preBest = bestVal;
+                score preBest = bestVal;
                 bestVal = Max(bestVal, value);
                 if (bestVal > preBest) {
                     for (uint8_t r = 0; r < MAX_ROW; r++) {
@@ -603,7 +636,7 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, true, alpha, beta);
             if (depth == 0) {
-                int preBest = bestVal;
+                score preBest = bestVal;
                 bestVal = Min(bestVal, value);
                 if (bestVal < preBest)
                 {
@@ -619,7 +652,7 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
             else {
                 bestVal = Min(bestVal, value);
             }
-            alpha = Min(beta, bestVal);
+            beta = Min(beta, bestVal);
             if (beta <= alpha) {
                 break;
             }
@@ -682,7 +715,30 @@ int8_t LetterToRow(const char& letter) {
     }
 }
 bool ValidMove(const Node& node, const int8_t& r, const int8_t& c) {
-    return node.currBoard[r][c] == '\0';
+    // if initial move
+    if (node.lastPlay[0] == MAX_ROW)
+        return true;
+
+    if (node.currBoard[r][c] == '\0') {
+        int count = 0;
+        // checking for adjecency
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1;j++) {
+                if (i == j)
+                    continue;
+
+                if (r == (node.lastPlay[0] + i) && c == (node.lastPlay[1] + j))
+                    return true;
+                else if (node.currBoard[node.lastPlay[0] + i][node.lastPlay[1] + j] != '\0')
+                    count++;
+            }
+
+            // if all adjecent spaces are filled (i.e., choose random spot)
+            if (count == 8)
+                return true;
+        }
+    }
+    return false;
 }
 
 int main() {
@@ -690,11 +746,11 @@ int main() {
     cout << "\tPLEASE HAVE AUDIO ON!!! There is Music Playing in the background. \n\n";
     cout << "\n\nWelcome to Freedom!\n";
 
-    //// Clearing any music that might be playing in the back ground
-    //Clear();
+    // Clearing any music that might be playing in the back ground
+    Clear();
 
-    //// Starting the back gound music
-    //BattleMusic();
+    // Starting the back gound music
+    BattleMusic();
 
     // declare node and print board
     Node node;
@@ -704,26 +760,69 @@ int main() {
     bool over = false;
     while (!over) {
         if (turn) {
-            char letter; int col; int8_t row;
-            do {
-                printf("Please make a move w/white stone (RowCol Ex: A3): ");
-                cin >> letter >> col;
-                col--;
-                row = LetterToRow(letter);
-                if (row != -1) {
-                    if (!ValidMove(node, row, col)) {
+            uint8_t count = 0; bool onlyOneRemaining = true;
+            uint8_t index[2];
+            for (uint8_t r = 0; r < MAX_ROW; r++) {
+                for (uint8_t c = 0; c < MAX_COL; c++) {
+                    count += node.currBoard[r][c] == '\0';
+                    index[0] = r;
+                    index[1] = c;
+                    if (count > 1) {
+                        onlyOneRemaining = false;
+                        break;
+                    }
+                }
+            }
+            if (onlyOneRemaining) {
+                bool valid;
+                do {
+                    valid = true;
+                    char noYes;
+                    printf("Only one space remaining. Would you like to leave empty? (Y/N): ");
+                    cin >> noYes;
+
+                    if (noYes == 'n' || noYes == 'N') {
+                        node.lastPlay[0] = index[0];
+                        node.lastPlay[1] = index[1];
+                        node.currBoard[index[0]][index[1]] = ' ';
+                    }
+                    else if (noYes == 'y' || noYes == 'Y') {
+                        node.lastPlay[0] = index[0];
+                        node.lastPlay[1] = index[1];
+                        node.currBoard[index[0]][index[1]] = 'W';
+                    }
+                    else {
                         printf("ERROR: Please re-enter\n\a");
-                        row = -1;
 
                         // Clearing and ignoring the last cin
                         cin.clear();
                         cin.ignore();
                     }
-                }
-            } while (row == -1);
-            node.lastPlay[0] = row;
-            node.lastPlay[1] = col;
-            node.currBoard[row][col] = 'W';
+
+                } while (!valid);
+            }
+            else {
+                char letter; int col; int8_t row;
+                do {
+                    printf("Please make a move w/white stone (RowCol Ex: A3): ");
+                    cin >> letter >> col;
+                    col--;
+                    row = LetterToRow(letter);
+                    if (row != -1) {
+                        if (!ValidMove(node, row, col)) {
+                            printf("ERROR: Please re-enter\n\a");
+                            row = -1;
+
+                            // Clearing and ignoring the last cin
+                            cin.clear();
+                            cin.ignore();
+                        }
+                    }
+                } while (row == -1);
+                node.lastPlay[0] = row;
+                node.lastPlay[1] = col;
+                node.currBoard[row][col] = 'W';
+            }
         }
         else {
             Minimax(node, 0, true, MIN_SCORE, MAX_SCORE);
