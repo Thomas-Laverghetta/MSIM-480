@@ -1,9 +1,12 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include <atomic>
 #include "AudioPlayer.h"
-#define MAX_ROW 4
-#define MAX_COL 4
+#define MAX_ROW 10
+#define MAX_COL 10
 #define MAX_SCORE INT_MAX
 #define MIN_SCORE INT_MIN
 typedef int score;
@@ -53,9 +56,11 @@ vector<Node> PossibleMoves(const Node& node, bool player) {
                 break;
             }
         }
+        if (!onlyOneRemaining)
+            break;
     }
 
-    if (onlyOneRemaining) {
+    if (!onlyOneRemaining) {
         // r + 1, c
         if (node.lastPlay[0] + 1 < MAX_ROW && node.currBoard[node.lastPlay[0] + 1][node.lastPlay[1]] == '\0') {
             nodeSet.push_back(node);
@@ -598,18 +603,28 @@ score NodeScore(const Node& node) {
     return numSingles + numDoubles*2 + numTriples*3 + numLives*4;
 }
 
-unsigned int MAX_DEPTH = 10; Node next_move;
+atomic<bool> exit_thread_flag;
+unsigned int MAX_DEPTH; Node next_move; bool LEAF;
 // minimax search algorithm
 score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta) {
-    if (depth == MAX_DEPTH || IsLeaf(node))
+    if (exit_thread_flag)
+        return -1;
+    
+    if (depth == MAX_DEPTH)
         return NodeScore(node);
-
+    
+    if (IsLeaf(node)) {
+        LEAF = true;
+        return NodeScore(node);
+    }
     score bestVal;
     if (isMax) {
         bestVal = MIN_SCORE;
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, false, alpha, beta);
-            if (depth == 0) {
+            if (value == -1)
+                return -1;
+            else if (depth == 0) {
                 score preBest = bestVal;
                 bestVal = Max(bestVal, value);
                 if (bestVal > preBest) {
@@ -635,7 +650,9 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
         bestVal = MAX_SCORE;
         for (auto& child : PossibleMoves(node, isMax)) {
             score value = Minimax(child, depth + 1, true, alpha, beta);
-            if (depth == 0) {
+            if (value == -1)
+                return -1;
+            else if (depth == 0) {
                 score preBest = bestVal;
                 bestVal = Min(bestVal, value);
                 if (bestVal < preBest)
@@ -661,6 +678,27 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
     return bestVal;
 }
 
+void RunMinimax(const Node& node, Node& next_node, bool& leafFound) {
+    LEAF = false; MAX_DEPTH = 1;
+
+    // loop while minimax has not returned leaf (reached bottom of tree) and exit has not been flagged
+    while (!LEAF && !exit_thread_flag) {
+        // run minimax with specified depth
+        if (Minimax(node, 0, true, MIN_SCORE, MAX_SCORE) != -1) { // if thread did not recv exit flag, then copy data
+            for (uint8_t r = 0; r < MAX_ROW; r++) {
+                for (uint8_t c = 0; c < MAX_COL; c++) {
+                    next_node.currBoard[r][c] = next_move.currBoard[r][c];
+                }
+            }
+            next_node.lastPlay[0] = next_move.lastPlay[0];
+            next_node.lastPlay[1] = next_move.lastPlay[1];
+        }
+        MAX_DEPTH++; // increasing depth
+
+        leafFound = LEAF;
+    }
+}
+
 // diplays game board
 // http://web.theurbanpenguin.com/adding-color-to-your-output-from-c/
 void PrintBoard(const Node& node) {
@@ -676,15 +714,20 @@ void PrintBoard(const Node& node) {
         cout << " " << string(2 + 4* MAX_COL, '-') << endl;
         printf("%c|", letter++);
         for (uint8_t c = 0; c < MAX_COL; c++) {
-            if (node.currBoard[r][c] == 'B') {
-                printf("\033[1;31m");
+            if (r == node.lastPlay[0] && c == node.lastPlay[1]) {
+                printf("\033[1;32m");
+                printf(" %c ", node.currBoard[r][c]);
+                printf("\033[0m");
+            }
+            else if (node.currBoard[r][c] == 'B') {
+                printf("\033[1;34m");
                 printf(" %c ", node.currBoard[r][c]);
                 printf("\033[0m");
             }
             else if (node.currBoard[r][c] == 'W') {
-                printf("\033[1;32m");
+                //printf("\033[1;32m");
                 printf(" %c ", node.currBoard[r][c]);
-                printf("\033[0m");
+                //printf("\033[0m");
             }
             else {
                 printf(" %c ", node.currBoard[r][c]);
@@ -825,12 +868,27 @@ int main() {
             }
         }
         else {
-            Minimax(node, 0, true, MIN_SCORE, MAX_SCORE);
+            // timed minimax (allows for variable depth approximations)
+            exit_thread_flag = false;
+            Node nextNode;
+            bool LeafFound = false;
+            thread minimaxThread(&RunMinimax, ref(node), ref(nextNode), ref(LeafFound));
+            int interval = 0;
+            
+            // max computational time is 5-seconds
+            while (!LeafFound && interval < 5) {
+                this_thread::sleep_for(1s);
+                interval++;
+            }
+            
+            // signal to stop processing and join main thread
+            exit_thread_flag = true;
+            minimaxThread.join();
 
             // setting AI's move
-            node.currBoard[next_move.lastPlay[0]][next_move.lastPlay[1]] = next_move.currBoard[next_move.lastPlay[0]][next_move.lastPlay[1]];
-            node.lastPlay[0] = next_move.lastPlay[0];
-            node.lastPlay[1] = next_move.lastPlay[1];
+            node.currBoard[nextNode.lastPlay[0]][nextNode.lastPlay[1]] = nextNode.currBoard[nextNode.lastPlay[0]][nextNode.lastPlay[1]];
+            node.lastPlay[0] = nextNode.lastPlay[0];
+            node.lastPlay[1] = nextNode.lastPlay[1];
         }
 
         over = IsLeaf(node);
