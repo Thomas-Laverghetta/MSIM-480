@@ -730,7 +730,7 @@ void PrintBoard(const Node& node) {
                 //printf("\033[0m");
             }
             else {
-                printf("   ", node.currBoard[r][c]);
+                printf("   ");
             }
             printf("|");
         }
