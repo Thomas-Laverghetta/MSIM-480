@@ -49,8 +49,10 @@ vector<Node> PossibleMoves(const Node& node, bool player) {
     for (uint8_t r = 0; r < MAX_ROW; r++) {
         for (uint8_t c = 0; c < MAX_COL; c++) {
             count += node.currBoard[r][c] == '\0';
-            index[0] = r * node.currBoard[r][c] == '\0';
-            index[1] = c * node.currBoard[r][c] == '\0';
+            if(node.currBoard[r][c] == '\0') {
+                index[0] = r;
+                index[1] = c;
+            }
             if (count > 1) {
                 onlyOneRemaining = false;
                 break;
@@ -808,8 +810,10 @@ int main() {
             for (uint8_t r = 0; r < MAX_ROW; r++) {
                 for (uint8_t c = 0; c < MAX_COL; c++) {
                     count += node.currBoard[r][c] == '\0';
-                    index[0] = r * node.currBoard[r][c] == '\0';
-                    index[1] = c * node.currBoard[r][c] == '\0';
+                    if (node.currBoard[r][c] == '\0') {
+                        index[0] = r;
+                        index[1] = c;
+                    }
                     if (count > 1) {
                         onlyOneRemaining = false;
                         break;
