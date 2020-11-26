@@ -12,11 +12,15 @@ the opposite direction a player stone was found, the search is aborted. This is 
 same domain (group). Therefore, eliminating redudant groups. Also, to be clear, if any stone was found in the direction of search (SW, S, SE, or E), it will not aborted
 since stone that has been found has not tested any domains yet (no grouping have been determined by that stone).
 
+Once all stones have been searched, a weighted score is returned. Singles stones have a weight 1, double stones have a weight 2, triple stones have a weight 3, and 
+lives have a weight 4. I did this so to increase the number of active stones in a group.
+
+Pseudocode
 Node Score (board):
 	foreach r in row:
 		foreach c in col:
 			if board[r][c] == playerSymbol:
-				// checking south
+				// checking south-direction
 				if r + 3 is viable and r + 4 either does not exist (past range) or not player symbol and r - 1 either dose not exist (past range) or not player symbol:
 					search and count number of stones player found r->(r+3) ...
 					if any other player stone found, stop search, stop search and abort this conditional (checking south)
@@ -30,14 +34,14 @@ Node Score (board):
 					else:
 						increase number of lives
 
-				// checking r - 3 (north) for active stones
+				// checking r - 3 (north) for active stones (first decomposioner)
 				if r - 3 is viable and r - 4 is either non-existant or non-player symbol and r + 1 is either non-existant or non-player symbol
 					search and count number of player stones found r->(r-3) ...
 					if any stone is found, stop search and abort conditional (checking north)
 					else:
 						increase number of single stones with possible live found
 				
-				// checking north 2 and south 1 for active stones
+				// checking north 2 and south 1 for active stones (2nd decomposioner)
 				if r - 2 and r + 1 are viable and (r - 3 and r + 2 (bounds) do not have player stones):
 					search and count number of player stones found (r-2)->(r+1)...
 					if any player stone found before r (r-2->r) or any other player stone found after or including r:
@@ -45,10 +49,25 @@ Node Score (board):
 					else:
 						increase the associated number of active stones with stone counter (triple, double, single)
 				
-				// checking north 1 and south 2 for active stones
-				if r - 1 and r + 2 are viable and (r - 2 and r + 3 do not have player stones):
+				// checking north 1 and south 2 for active stones (3rd decomposioner)
+				if r - 1 and r + 2 are viable and (r - 2 and r + 3 do not contain player stones):
 					search and count number of stones found (r-1)->(r+2)...
 					if any player stone found before r (r-1->r) or any other player stone found after or including r:
 						abort conditional, no active stones in domain
 					else:
-						
+						increase the associated number of active stones with stone counter (triple, double, single)
+				
+
+				// Checking East
+				Same operations are preformed only difference is domain checked is against columns instead of rows
+			
+				// checking SE
+				Same operations are preformed only difference is domain checked against is column and row. Where SE is 
+				r->(r+3) and c->(c+3). 
+
+				// checking SW
+				Same operations are preformed only difference is domain checked against is column and row. Where SW is 
+				r->(r-3) and c->(c-3). 
+
+
+return (number of singles * 1) + (number of doubles * 2) + (number of triples * 3) + (number of lives * 4)

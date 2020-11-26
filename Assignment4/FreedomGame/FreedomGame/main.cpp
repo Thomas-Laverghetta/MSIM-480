@@ -508,7 +508,7 @@ score NodeScore(const Node& node) {
 
                 /////////////////
 
-                // checking Sourth-East
+                // checking South-west
                 if (c - 3 >= 0 && r + 3 < MAX_ROW && (r + 4 < MAX_ROW && c - 4 >= 0 ? node.currBoard[r + 4][c - 4] != playChar : true) && (r - 1 >= 0 && c + 1 < MAX_COL ? node.currBoard[r - 1][c + 1] != playChar : true)) {
                     int8_t count = 0;
                     for (uint8_t i = 1; i <= 3; i++) {
