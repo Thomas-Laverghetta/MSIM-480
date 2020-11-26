@@ -919,5 +919,7 @@ int main() {
         CatVictory();
         cout << "\tThe CAT Won! DRAW GG!\n\n";
     }
+
+    system("pause");
     return 0;
 }

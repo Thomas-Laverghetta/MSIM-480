@@ -1,0 +1,54 @@
+definitions:
+Active stone - a stone(s) that have the possibility to be a live
+player stone - black or white stone
+board - is a NxN matrix, therefore, row=0 and col=0 == north-west; row=N and col=0 == south-west; row=0 and col=N == north-east; row=N and col=N == south-east
+
+Algorithm will search starting from row=0, col=0 to row=N, col=N for active stone(s). Where the number of active stones found in a group of 4 (possible live or live) 
+will be assiocated with counter: single stone counter, double stone counter, triple stone counter, and live stone counter. These corresponding to, one stone found 
+in group, two stones found in group, three stones found in group, and four stones found in group, respectively. Groups will not be counted twice. Algorithm will 
+search for stones by searching SW, S, SE, & E 3-stones out from current stone position. Then it will decompose those four direction into sub directions by searching
+opposite of search direction by 1, 2, & 3-stones out still groups of 4-stones (remaining stones are searched in search direction). If at any point while searching in
+the opposite direction a player stone was found, the search is aborted. This is because that stone found (if current player stone) would have counted current stone in
+same domain (group). Therefore, eliminating redudant groups. Also, to be clear, if any stone was found in the direction of search (SW, S, SE, or E), it will not aborted
+since stone that has been found has not tested any domains yet (no grouping have been determined by that stone).
+
+Node Score (board):
+	foreach r in row:
+		foreach c in col:
+			if board[r][c] == playerSymbol:
+				// checking south
+				if r + 3 is viable and r + 4 either does not exist (past range) or not player symbol and r - 1 either dose not exist (past range) or not player symbol:
+					search and count number of stones player found r->(r+3) ...
+					if any other player stone found, stop search, stop search and abort this conditional (checking south)
+					
+					if number of found stones is 1:
+						increase number of singles stones with possible live found
+					else if number of found stones is 2:
+						increase number of double stones with possible live found
+					else if number of found stones is 3:
+						increase number of triple stones with possible live found
+					else:
+						increase number of lives
+
+				// checking r - 3 (north) for active stones
+				if r - 3 is viable and r - 4 is either non-existant or non-player symbol and r + 1 is either non-existant or non-player symbol
+					search and count number of player stones found r->(r-3) ...
+					if any stone is found, stop search and abort conditional (checking north)
+					else:
+						increase number of single stones with possible live found
+				
+				// checking north 2 and south 1 for active stones
+				if r - 2 and r + 1 are viable and (r - 3 and r + 2 (bounds) do not have player stones):
+					search and count number of player stones found (r-2)->(r+1)...
+					if any player stone found before r (r-2->r) or any other player stone found after or including r:
+						abort conditional search, no active stones in domain
+					else:
+						increase the associated number of active stones with stone counter (triple, double, single)
+				
+				// checking north 1 and south 2 for active stones
+				if r - 1 and r + 2 are viable and (r - 2 and r + 3 do not have player stones):
+					search and count number of stones found (r-1)->(r+2)...
+					if any player stone found before r (r-1->r) or any other player stone found after or including r:
+						abort conditional, no active stones in domain
+					else:
+						
