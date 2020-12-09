@@ -3,7 +3,7 @@ Minimax(node, depth, isMaxPlayer, alpha, beta):
 	if depth == max depth OR node is leaf:
 		return value of node
 	
-	if isMaxPlayer == MAX:
+	if isMaxPlayer:
 		bestVal = -INF
 		foreach child node:
 			value = minimax(child, depth + 1, MIN, alpha, beta)

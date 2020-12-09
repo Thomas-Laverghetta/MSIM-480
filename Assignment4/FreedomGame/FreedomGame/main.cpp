@@ -628,10 +628,10 @@ score NodeScore(const Node& node) {
 
 // progressive minimax algorithm variables
 atomic<bool> exit_thread_flag;
-unsigned int MAX_DEPTH; Node next_move; bool LEAF;
+Node next_move; bool LEAF;
 
 // minimax search algorithm
-score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta) {
+score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta, const unsigned int& MAX_DEPTH) {
     // if thread has been flagged to stop minimax, return -1
     if (exit_thread_flag)
         return -1;
@@ -708,12 +708,12 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
 }
 
 void RunMinimax(const Node& node, Node& next_node, bool& leafFound, bool player) {
-    LEAF = false; MAX_DEPTH = 1;
+    LEAF = false; unsigned int MAX_DEPTH = 5;
 
     // loop while minimax has not returned leaf (reached bottom of tree) and exit has not been flagged
     while (!LEAF && !exit_thread_flag) {
         // run minimax with specified depth
-        if (Minimax(node, 0, player, MIN_SCORE, MAX_SCORE) != -1) { // if thread did not recv exit flag, then copy data
+        if (Minimax(node, 0, player, MIN_SCORE, MAX_SCORE, MAX_DEPTH) != -1) { // if thread did not recv exit flag, then copy data
             for (uint8_t r = 0; r < MAX_ROW; r++) {
                 for (uint8_t c = 0; c < MAX_COL; c++) {
                     next_node.currBoard[r][c] = next_move.currBoard[r][c];
@@ -839,11 +839,11 @@ int main() {
         }
     } while (!valid);
 
-    // Clearing any music that might be playing in the back ground
-    Clear();
+    //// Clearing any music that might be playing in the back ground
+    //Clear();
 
-    // Starting the back gound music
-    BattleMusic();
+    //// Starting the back gound music
+    //BattleMusic();
 
     // declare node and print board
     Node node;
