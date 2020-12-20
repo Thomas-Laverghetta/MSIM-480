@@ -650,7 +650,7 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
     if (isMax) {
         bestVal = MIN_SCORE;
         for (auto& child : PossibleMoves(node, AI_sym)) {
-            score value = Minimax(child, depth + 1, false, alpha, beta);
+            score value = Minimax(child, depth + 1, false, alpha, beta, MAX_DEPTH);
             if (value == -1)
                 return -1;
             else if (depth == 0) {
@@ -678,7 +678,7 @@ score Minimax(Node node, unsigned int depth, bool isMax, score alpha, score beta
     else {
         bestVal = MAX_SCORE;
         for (auto& child : PossibleMoves(node, Human_sym)) {
-            score value = Minimax(child, depth + 1, true, alpha, beta);
+            score value = Minimax(child, depth + 1, true, alpha, beta, MAX_DEPTH);
             if (value == -1)
                 return -1;
             else if (depth == 0) {
